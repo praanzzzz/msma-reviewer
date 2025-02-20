@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div id="register" class="d-flex justify-content-center align-items-center vh-100">
+    <form id="formRegister" action="{% url 'my_register' %}" method="POST" class="p-4 border rounded shadow bg-white">
+        <h3>Create Account</h3>
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required>
+            {% if form.email.errors %}
+            <div class="text-danger">{{ form.email.errors.0 }}</div>  <!-- Display email errors -->
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" name="password" class="form-control" required>
+            {% if form.password.errors %}
+            <div class="text-danger">{{ form.password.errors.0 }}</div>  <!-- Display password errors -->
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            <label for="password_confirmation" class="form-label">Password Confirmation</label>
+            <input type="password" name="password_confirmation" class="form-control" required>
+            {% if form.password_confirmation.errors %}
+            <div class="text-danger">{{ form.password_confirmation.errors.0 }}</div>  <!-- Display confirmation errors -->
+            {% endif %}
+        </div>
+        <button type="submit" class="btn btn-success w-100">Register</button>
+        <p>Already a member? <a href="{% url 'my_login' %}">Sign in here</a></p>
+    </form>
+</div>
+
+{% endblock %}

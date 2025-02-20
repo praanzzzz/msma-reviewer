@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+
+<div class="container d-flex justify-content-center align-items-center vh-100 text-center">
+    <div>
+        <h1>DASHBOARD</h1>
+        <p>See all your statistics here !</p>
+        <a href="{% url 'my_logout' %}">
+            <i class="fas fa-sign-out-alt"></i>
+            <span class="link_name">Logout</span>
+        </a>
+    </div>
+</div>
+
+
+{% endblock %}
