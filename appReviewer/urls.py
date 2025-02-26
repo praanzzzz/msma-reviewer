@@ -12,6 +12,8 @@ urlpatterns = [
     path('my_logout/', views.my_logout, name='my_logout'),
     path('my_register/', views.my_register, name='my_register'),
     path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
+    path('reviewer/', views.reviewer, name='reviewer'),
+    path('profile/', views.profile, name='profile'),
 ]
 
 # it enables django to fetch static files during developmemt phase.

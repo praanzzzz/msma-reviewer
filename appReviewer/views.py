@@ -47,7 +47,6 @@ def verify_email(request, token):
         user.is_verified = True
         user.is_active = True
         user.save()
-        print("Email verified successfully.")
         messages.success(request, "Email verified Succesfully")
         return redirect("my_login")
     except SignatureExpired:
@@ -84,5 +83,15 @@ def my_logout(request):
         logout(request)
         return redirect("my_login")
 
+
+
+@login_required
+def reviewer(request):
+    return render(request, "appReviewer/reviewer.html")
+
+
+@login_required
+def profile(request):
+    return render(request, "appReviewer/profile.html")
 
 
