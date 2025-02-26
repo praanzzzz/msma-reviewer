@@ -38,5 +38,4 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(Category)
 admin.site.register(Scenario)
 admin.site.register(Question)
-
 admin.site.register(CustomUser, CustomUserAdmin)
