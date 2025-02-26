@@ -29,8 +29,10 @@ def my_register(request):
             user.is_verified = False
             user.is_active = False
             user.save()
-            send_verification_email(user)  
-            return HttpResponse("Check your email and verify.")
+            send_verification_email(user)
+            messages.info(request, "Please check and verify email.")
+            return redirect("my_register")
+    
     else:
         form = RegisterForm()
     return render(request, "auth_pages/my_register.html", {"form": form})
@@ -45,15 +47,14 @@ def verify_email(request, token):
         user.is_verified = True
         user.is_active = True
         user.save()
-
         print("Email verified successfully.")
-        return HttpResponse("Email verified successfully!")  
-
+        messages.success(request, "Email verified Succesfully")
+        return redirect("my_login")
     except SignatureExpired:
-        return HttpResponse("Verification link expired. Please register again.", status=400)
+        messages.error(request, "Verification link expired. Please register again.")
     except (BadSignature, CustomUser.DoesNotExist):
         print("Email verification failed. Invalid or expired verification link.")
-        return HttpResponse("Invalid verification link.", status=400)
+        messages.error(request, "Invalid verification link")
 
 
 
