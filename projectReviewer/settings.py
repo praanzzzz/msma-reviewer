@@ -118,15 +118,19 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-# serve static and media files thru this url
+
+
+
+# Defines the URL path where static and media files can be accessed in the browser
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
-
-# stores uploaded files in a static and media directory
+# Specifies where Django will look for additional static files in development (not for collected static files)
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+# Specifies the directory where uploaded media files (e.g., user uploads) will be stored
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -135,8 +139,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # override the default user to CustomUser
 AUTH_USER_MODEL = 'appReviewer.CustomUser'
-
-LOGIN_URL = 'my_login'
 
 # number of rows superadmin can select in one go - django admin site
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000 

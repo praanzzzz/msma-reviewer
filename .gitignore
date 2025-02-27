@@ -13,4 +13,5 @@ db.sqlite3
 # Local settings and environment variables
 .env
 
+staticfiles/
 
