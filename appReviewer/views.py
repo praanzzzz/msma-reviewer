@@ -4,10 +4,8 @@ from .utils import send_verification_email
 from django.contrib import messages
 from .forms import RegisterForm, LoginForm
 from .models import CustomUser
-from django.core.signing import BadSignature, SignatureExpired
+from django.core.signing import Signer, BadSignature, SignatureExpired
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse
-from django.core.signing import Signer
 signer = Signer()
 
 
@@ -71,13 +69,14 @@ def my_login(request):
             elif not user.is_active:
                 messages.info(request, "Account is deactived")
             else:
+                messages.success(request, "Succesfully Loggedin")
                 login(request, user)
                 return redirect("dashboard")
     context = {"form": form}
     return render(request, "auth_pages/my_login.html", context)
 
 
-
+@login_required
 def my_logout(request):
     if request.user.is_authenticated:
         logout(request)
@@ -93,5 +92,3 @@ def reviewer(request):
 @login_required
 def profile(request):
     return render(request, "appReviewer/profile.html")
-
-
