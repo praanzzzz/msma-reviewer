@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, Category, Scenario, Question
+from .models import CustomUser, Category, Scenario, LevelOfDifficulty, Question
 from django.contrib.auth.admin import UserAdmin
 
 
@@ -37,5 +37,6 @@ class CustomUserAdmin(UserAdmin):
 
 admin.site.register(Category)
 admin.site.register(Scenario)
+admin.site.register(LevelOfDifficulty)
 admin.site.register(Question)
 admin.site.register(CustomUser, CustomUserAdmin)

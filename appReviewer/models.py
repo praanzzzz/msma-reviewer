@@ -69,11 +69,24 @@ class Scenario(models.Model):
 
     def __str__(self):
         return f"Scenario for {self.category.name}"
-    
+
+
+
+class LevelOfDifficulty(models.Model):
+    LEVEL_CHOICES = [
+        ('Easy', 'Easy'),
+        ('Medium', 'Medium'),
+        ('Hard', 'Hard'),
+    ]
+    name = models.CharField(max_length=10, choices=LEVEL_CHOICES, unique=True)
+
+    def __str__(self):
+        return self.name
 
 class Question(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, null=True, blank=True)
+    level_of_difficulty = models.ForeignKey(LevelOfDifficulty, on_delete=models.CASCADE)
     question_text = models.TextField()
     image = models.ImageField(upload_to='question_images/', null=True, blank=True)
     option_a = models.TextField()  
