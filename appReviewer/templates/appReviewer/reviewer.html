@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container d-flex justify-content-center align-items-center vh-100">
     <div>
-        <h1>Select Category</h1>
+      
 
         <form
             id ="selcatform"
@@ -12,6 +12,7 @@
             hx-swap="afterHTML"
         >
             {% csrf_token %}
+            <h1>Select Category</h1>
             <div class="mb-3">
                 <label for="categorySelect" class="form-label">Select Category</label>
                 <select id="categorySelect" name="category" class="form-select" required>

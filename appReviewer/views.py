@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 from django.shortcuts import render, redirect
 from .utils import send_verification_email
 from django.contrib import messages
@@ -102,14 +103,25 @@ def generate_questions(request):
         difficulty_name = request.POST.get("difficulty")
 
         category = get_object_or_404(Category, name=category_name)
-        difficulty = get_object_or_404(LevelOfDifficulty, name__iexact=difficulty_name) 
+        difficulty = get_object_or_404(LevelOfDifficulty, name__iexact=difficulty_name)
         
         questions = list(Question.objects.filter(category=category, level_of_difficulty=difficulty).order_by("?")[:question_count])
         random.shuffle(questions)
-        generated_quiz = GeneratedQuiz.objects.create(user=request.user, category=category)
-        generated_quiz.questions.set(questions)
-        return render(request, "partials/generated_questions.html", {"questions": questions})
+
+    #    # Save generated quiz
+    #     generated_quiz = GeneratedQuiz.objects.create(
+    #         user=request.user,
+    #         category=category,
+    #         number_of_questions=len(questions),
+    #     )
+    #     generated_quiz.questions.set(questions) # assigns set of questions to the generated quiz
+        context = {"questions": questions,
+                   "category_name": category_name,
+                   "difficulty_name": difficulty_name}
+        return render(request, "partials/generated_questions.html", context)
     return HttpResponseBadRequest("Invalid request")
+
+
 
 
 

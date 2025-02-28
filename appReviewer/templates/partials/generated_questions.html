@@ -1,9 +1,38 @@
 
-{% for question in questions %}
-    <div class="card my-2">
-        <div class="card-body">
-            <h5 class="card-title">{{ question }}</h5>
-        </div>
-    </div>
-{% endfor %}
-
+ <h5>{{ category_name }}</h5>
+ <p>{{ difficulty_name }}</p>
+ 
+ <form method="POST" action="">
+     {% csrf_token %}
+     
+     {% for question in questions %}
+         <div class="card my-2">
+             <div class="card-body">
+                 <h5 class="card-title">{{ question }}</h5>
+ 
+                 <div class="form-check">
+                     <input type="radio" name="question_{{ question.id }}" value="A" class="form-check-input" required>
+                     <label class="form-check-label">a. {{ question.option_a }}</label>
+                 </div>
+ 
+                 <div class="form-check">
+                     <input type="radio" name="question_{{ question.id }}" value="B" class="form-check-input">
+                     <label class="form-check-label">b. {{ question.option_b }}</label>
+                 </div>
+ 
+                 <div class="form-check">
+                     <input type="radio" name="question_{{ question.id }}" value="C" class="form-check-input">
+                     <label class="form-check-label">c. {{ question.option_c }}</label>
+                 </div>
+ 
+                 <div class="form-check">
+                     <input type="radio" name="question_{{ question.id }}" value="D" class="form-check-input">
+                     <label class="form-check-label">d. {{ question.option_d }}</label>
+                 </div>
+             </div>
+         </div>
+     {% endfor %}
+     
+     <button type="submit" class="btn btn-primary mt-3">Submit Answers</button>
+ </form>
+ 

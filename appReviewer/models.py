@@ -104,9 +104,9 @@ class Question(models.Model):
 
 class GeneratedQuiz(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)  
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)  
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    number_of_questions = models.IntegerField()
     questions = models.ManyToManyField(Question)  # Many-to-Many with Question
-    numItems = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
