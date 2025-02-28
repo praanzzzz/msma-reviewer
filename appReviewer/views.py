@@ -3,8 +3,11 @@ from django.shortcuts import render, redirect
 from .utils import send_verification_email
 from django.contrib import messages
 from .forms import RegisterForm, LoginForm
-from .models import CustomUser
+from .models import CustomUser, Category, Scenario, LevelOfDifficulty, Question, GeneratedQuiz
 from django.core.signing import Signer, BadSignature, SignatureExpired
+import random
+from django.http import HttpResponseBadRequest  # For returning a 400 Bad Request response
+from django.shortcuts import get_object_or_404  # For fetching an object or returning a 404 response if not found
 from django.contrib.auth import authenticate, login, logout
 signer = Signer()
 
@@ -83,10 +86,31 @@ def my_logout(request):
         return redirect("my_login")
 
 
-
 @login_required
 def reviewer(request):
-    return render(request, "appReviewer/reviewer.html")
+    categories = Category.objects.all()
+    difficulties = LevelOfDifficulty.objects.all()
+    context = {"categories": categories, "difficulties": difficulties}
+    return render(request, "appReviewer/reviewer.html", context)
+
+
+@login_required
+def generate_questions(request):
+    if request.method == "POST" and request.headers.get("HX-Request"):
+        category_name = request.POST.get("category")
+        question_count = int(request.POST.get("question_count"))
+        difficulty_name = request.POST.get("difficulty")
+
+        category = get_object_or_404(Category, name=category_name)
+        difficulty = get_object_or_404(LevelOfDifficulty, name__iexact=difficulty_name) 
+        
+        questions = list(Question.objects.filter(category=category, level_of_difficulty=difficulty).order_by("?")[:question_count])
+        random.shuffle(questions)
+        generated_quiz = GeneratedQuiz.objects.create(user=request.user, category=category)
+        generated_quiz.questions.set(questions)
+        return render(request, "partials/generated_questions.html", {"questions": questions})
+    return HttpResponseBadRequest("Invalid request")
+
 
 
 @login_required

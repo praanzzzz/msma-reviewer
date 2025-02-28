@@ -68,7 +68,7 @@ class Scenario(models.Model):
     image = models.ImageField(upload_to='scenario_images/', null=True, blank=True)
 
     def __str__(self):
-        return f"Scenario for {self.category.name}"
+        return f"{self.scene}"
 
 
 
@@ -99,3 +99,15 @@ class Question(models.Model):
 
     def __str__(self):
         return self.question_text
+    
+
+
+class GeneratedQuiz(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)  
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)  
+    questions = models.ManyToManyField(Question)  # Many-to-Many with Question
+    numItems = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Quiz by {self.user.email} on {self.category.name}"

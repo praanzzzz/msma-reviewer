@@ -1,15 +1,44 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block content %}
-
-<div class="container d-flex justify-content-center align-items-center vh-100 text-center">
+<div class="container d-flex justify-content-center align-items-center vh-100">
     <div>
-        <h1>Practice Exam</h1>
-        <p>You can now practice your exams here. Goodluck !</p>
-       
+        <h1>Select Category</h1>
+
+        <form
+            id ="selcatform"
+            hx-post="{% url 'generate_questions' %}"
+            hx-target="#selcatform"
+            hx-swap="afterHTML"
+        >
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="categorySelect" class="form-label">Select Category</label>
+                <select id="categorySelect" name="category" class="form-select" required>
+                    <option value="" disabled selected>Choose a category</option>
+                    {% for category in categories %}
+                        <option value="{{ category.name }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="difficultySelect" class="form-label">Select Difficulty</label>
+                <select id="difficultySelect" name="difficulty" class="form-select" required>
+                    <option value="" disabled selected>Choose difficulty</option>
+                    {% for difficulty in difficulties %}
+                        <option value="{{ difficulty.name }}">{{ difficulty.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <label for="questionCount">Number of Questions:</label>
+            <input type="number" id="questionCount" name="question_count" min="1" max="50" value="10" required>
+
+            <button type="submit">Generate Questions</button>
+        </form>
     </div>
 </div>
-
+<div id="questionContainer"></div>
 
 {% endblock %}

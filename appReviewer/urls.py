@@ -1,8 +1,8 @@
 from django.urls import path
-from django.contrib import admin
 from appReviewer import views
 from django.conf import settings
 from django.conf.urls.static import static
+
 
 
 urlpatterns = [
@@ -12,8 +12,9 @@ urlpatterns = [
     path('my_logout/', views.my_logout, name='my_logout'),
     path('my_register/', views.my_register, name='my_register'),
     path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
-    path('reviewer/', views.reviewer, name='reviewer'),
     path('profile/', views.profile, name='profile'),
+    path('reviewer/', views.reviewer, name='reviewer'),
+    path('generate_questions/', views.generate_questions, name='generate_questions'),
 ]
 
 # it enables django to fetch static files during developmemt phase.
