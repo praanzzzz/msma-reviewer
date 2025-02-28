@@ -1,38 +1,68 @@
 
- <h5>{{ category_name }}</h5>
- <p>{{ difficulty_name }}</p>
- 
- <form method="POST" action="">
-     {% csrf_token %}
-     
-     {% for question in questions %}
-         <div class="card my-2">
-             <div class="card-body">
-                 <h5 class="card-title">{{ question }}</h5>
- 
-                 <div class="form-check">
-                     <input type="radio" name="question_{{ question.id }}" value="A" class="form-check-input" required>
-                     <label class="form-check-label">a. {{ question.option_a }}</label>
-                 </div>
- 
-                 <div class="form-check">
-                     <input type="radio" name="question_{{ question.id }}" value="B" class="form-check-input">
-                     <label class="form-check-label">b. {{ question.option_b }}</label>
-                 </div>
- 
-                 <div class="form-check">
-                     <input type="radio" name="question_{{ question.id }}" value="C" class="form-check-input">
-                     <label class="form-check-label">c. {{ question.option_c }}</label>
-                 </div>
- 
-                 <div class="form-check">
-                     <input type="radio" name="question_{{ question.id }}" value="D" class="form-check-input">
-                     <label class="form-check-label">d. {{ question.option_d }}</label>
-                 </div>
-             </div>
-         </div>
-     {% endfor %}
-     
-     <button type="submit" class="btn btn-primary mt-3">Submit Answers</button>
- </form>
- 
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+  <h5>{{ category_name }}</h5>
+  <p>Difficulty Level: {{ difficulty_name }}</p>
+
+<form method="POST" action="">
+    {% csrf_token %} <!-- CSRF Token for security -->
+
+    {% for group in final_questions %}
+        {% if group.scenario %}
+            <!-- Display Scenario -->
+            <div class="scenario">
+                <h6>{{ group.scenario.scene }}</h6>
+                {% if group.scenario.image %}
+                    <img src="" alt="Scenario Image">
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% for question in group.questions %}
+            <div class="card my-2">
+                <div class="card-body">
+                    {% if question.scenario %}
+                        <p class="text-muted"><em>Refer to the scenario above.</em></p>
+                    {% endif %}
+                    <p class="card-title">{{ question.question_text }}</p>
+
+                    
+
+                    {% if question.image %}
+                        <img src="" alt="Question Image">
+                    {% endif %}
+
+                    <!-- Radio Button Options (Only one choice per question) -->
+                    <div class="form-check">
+                        <input type="radio" name="question_{{ question.id }}" id="option_a_{{ question.id }}" class="form-check-input" value="A" required>
+                        <label for="option_a_{{ question.id }}" class="form-check-label">A. {{ question.option_a }}</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="radio" name="question_{{ question.id }}" id="option_b_{{ question.id }}" class="form-check-input" value="B" required>
+                        <label for="option_b_{{ question.id }}" class="form-check-label">B. {{ question.option_b }}</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="radio" name="question_{{ question.id }}" id="option_c_{{ question.id }}" class="form-check-input" value="C" required>
+                        <label for="option_c_{{ question.id }}" class="form-check-label">C. {{ question.option_c }}</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="radio" name="question_{{ question.id }}" id="option_d_{{ question.id }}" class="form-check-input" value="D" required>
+                        <label for="option_d_{{ question.id }}" class="form-check-label">D. {{ question.option_d }}</label>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary mt-3">Submit Quiz</button>
+</form>
+
+
+
+
+
+<br><br><br><br>

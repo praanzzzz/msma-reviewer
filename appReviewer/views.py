@@ -95,30 +95,87 @@ def reviewer(request):
     return render(request, "appReviewer/reviewer.html", context)
 
 
+
 @login_required
 def generate_questions(request):
     if request.method == "POST" and request.headers.get("HX-Request"):
+        # Get user-selected category, difficulty, and question count from the form
         category_name = request.POST.get("category")
         question_count = int(request.POST.get("question_count"))
         difficulty_name = request.POST.get("difficulty")
 
+        # Fetch Category and LevelOfDifficulty objects from the database
         category = get_object_or_404(Category, name=category_name)
         difficulty = get_object_or_404(LevelOfDifficulty, name__iexact=difficulty_name)
-        
-        questions = list(Question.objects.filter(category=category, level_of_difficulty=difficulty).order_by("?")[:question_count])
-        random.shuffle(questions)
 
-    #    # Save generated quiz
-    #     generated_quiz = GeneratedQuiz.objects.create(
-    #         user=request.user,
-    #         category=category,
-    #         number_of_questions=len(questions),
-    #     )
-    #     generated_quiz.questions.set(questions) # assigns set of questions to the generated quiz
-        context = {"questions": questions,
-                   "category_name": category_name,
-                   "difficulty_name": difficulty_name}
+        # Get all questions that have a scenario (grouped by scenario)
+        scenario_questions = list(Question.objects.filter(
+            category=category,
+            level_of_difficulty=difficulty
+        ).exclude(scenario__isnull=True).order_by("scenario"))
+
+        # Group questions by scenario (only add a scenario once)
+        grouped_questions = []
+        seen_scenarios = set()
+        scenario_question_count = 0  # Track how many scenario questions are included
+
+        for question in scenario_questions:
+            if question.scenario not in seen_scenarios:
+                grouped_questions.append({
+                    "scenario": question.scenario,  
+                    "questions": []  
+                })
+                seen_scenarios.add(question.scenario)
+
+            # Add question to its scenario group
+            for group in grouped_questions:
+                if group["scenario"] == question.scenario:
+                    if scenario_question_count < question_count:
+                        group["questions"].append(question)
+                        scenario_question_count += 1
+        
+        #  Shuffle questions **inside each scenario**
+        for group in grouped_questions:
+            random.shuffle(group["questions"])  
+
+        # Get non-scenario questions, ensuring we don’t exceed question_count
+        remaining_slots = question_count - scenario_question_count
+        non_scenario_questions = list(Question.objects.filter(
+            category=category,
+            level_of_difficulty=difficulty,
+            scenario__isnull=True
+        ).order_by("?")[:remaining_slots])
+
+        #  Shuffle non-scenario questions before adding them
+        random.shuffle(non_scenario_questions)
+
+        # Merge scenario-based questions with non-scenario questions
+        final_questions = grouped_questions
+        if non_scenario_questions:
+            final_questions.append({"scenario": None, "questions": non_scenario_questions})
+
+        #  Saving functionality (COMMENTED OUT for now)  
+        # Uncomment when ready to store the generated quiz in the database  
+
+        # # Create a GeneratedQuiz instance and save it  
+        # generated_quiz = GeneratedQuiz.objects.create(
+        #     user=request.user,  
+        #     category=category,  
+        #     number_of_questions=len(scenario_questions) + len(non_scenario_questions)  
+        # )  
+
+        # # Extract all selected questions and save them in ManyToMany field  
+        # all_questions = [q for group in final_questions for q in group["questions"]]  
+        # generated_quiz.questions.set(all_questions)  # Assigns questions to the quiz  
+
+        # Render the template with grouped questions
+        context = {
+            "final_questions": final_questions,
+            "category_name": category_name,
+            "difficulty_name": difficulty_name
+        }
         return render(request, "partials/generated_questions.html", context)
+
     return HttpResponseBadRequest("Invalid request")
 
 
