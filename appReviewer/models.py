@@ -103,3 +103,30 @@ class Question(models.Model):
         return self.question_text
     
 
+
+class GeneratedQuiz(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete = models.CASCADE)
+    category = models.ForeignKey(Category, on_delete = models.CASCADE)
+    level_of_difficulty = models.ForeignKey(LevelOfDifficulty, on_delete = models.CASCADE)
+    scenario = models.ManyToManyField(Scenario, blank=True) 
+    questions = models.ManyToManyField(Question)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Quiz {self.id} by {self.user.email} - {self.category.name} ({self.level_of_difficulty})"
+
+
+
+class Summary(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    generated_quiz = models.ForeignKey(GeneratedQuiz, on_delete=models.CASCADE, related_name="summaries")
+    user_answers = models.JSONField(default=dict)  # Example: {"5": "A", "7": "C"}
+    correct_questions = models.ManyToManyField(Question, related_name="correct_answers", blank=True)
+    incorrect_questions = models.ManyToManyField(Question, related_name="incorrect_answers", blank=True)
+    num_items = models.IntegerField()
+    score = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return (f"{self.user.email} - {self.generated_quiz.category.name} | "
+                f"{self.generated_quiz.level_of_difficulty} - {self.score}/{self.num_items}")

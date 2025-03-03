@@ -4,13 +4,14 @@ from django.shortcuts import render, redirect
 from .utils import send_verification_email
 from django.contrib import messages
 from .forms import RegisterForm, LoginForm
-from .models import CustomUser, Category, Scenario, LevelOfDifficulty, Question
+from .models import CustomUser, Category, Scenario, LevelOfDifficulty, Question, GeneratedQuiz, Summary
 from django.core.signing import Signer, BadSignature, SignatureExpired
 import random
 from django.http import HttpResponseBadRequest  # For returning a 400 Bad Request response
 from django.shortcuts import get_object_or_404  # For fetching an object or returning a 404 response if not found
 from django.contrib.auth import authenticate, login, logout
 signer = Signer()
+import json
 
 
 #                fadgMSMA@2025
@@ -154,39 +155,94 @@ def generate_questions(request):
         if non_scenario_questions:
             final_questions.append({"scenario": None, "questions": non_scenario_questions})
 
-        #  Saving functionality (COMMENTED OUT for now)  
-        # Uncomment when ready to store the generated quiz in the database  
+       # Create a GeneratedQuiz instance and save it  
+        generated_quiz = GeneratedQuiz.objects.create(
+            user=request.user,  
+            category=category,
+            level_of_difficulty=difficulty,  # Ensure difficulty level is included
+        )
+        # Extract all selected questions and save them in ManyToMany field  
+        all_questions = [q for group in final_questions for q in group["questions"]]  
+        generated_quiz.questions.set(all_questions)  # Assigns questions to the quiz  
 
-        # # Create a GeneratedQuiz instance and save it  
-        # generated_quiz = GeneratedQuiz.objects.create(
-        #     user=request.user,  
-        #     category=category,  
-        #     number_of_questions=len(scenario_questions) + len(non_scenario_questions)  
-        # )  
-
-        # # Extract all selected questions and save them in ManyToMany field  
-        # all_questions = [q for group in final_questions for q in group["questions"]]  
-        # generated_quiz.questions.set(all_questions)  # Assigns questions to the quiz  
+        # Extract scenarios from the selected questions and assign them  
+        scenarios = {q.scenario for q in all_questions if q.scenario}  # Get unique scenarios
+        generated_quiz.scenario.set(scenarios)  # Assign scenarios to the quiz  
 
         # Render the template with grouped questions
         context = {
             "final_questions": final_questions,
             "category_name": category_name,
-            "difficulty_name": difficulty_name
+            "difficulty_name": difficulty_name,
+            "generated_quiz_id": generated_quiz.id
         }
         return render(request, "partials/generated_questions.html", context)
-
     return HttpResponseBadRequest("Invalid request")
+
+
 
 
 
 @login_required
 def submit_quiz(request):
     if request.method == "POST" and request.headers.get("HX-Request"):
-        score = 1
-        context= {"score": score}
-        return render(request, "partials/quiz_result.html", context)
+        try:
+            # Retrieve and validate generated_quiz_id
+            generated_quiz_id = request.POST.get("generated_quiz_id")
+            if not generated_quiz_id or not generated_quiz_id.isdigit():
+                return HttpResponseBadRequest("Invalid quiz ID.")
+
+            generated_quiz = get_object_or_404(GeneratedQuiz, id=int(generated_quiz_id), user=request.user)
+
+            # Extract user answers dynamically
+            user_answers = {}
+            for key, value in request.POST.items():
+                if key.startswith("answers_"):  # Ensure we only get answers
+                    question_id = key.split("_")[1]  # Extract question ID
+                    user_answers[question_id] = value  # Store answer
+
+            # Debugging: Print extracted answers
+            print(f"Extracted Answers: {user_answers}")
+
+            if not user_answers:
+                return HttpResponseBadRequest("No answers received.")
+
+            # Fetch all questions from the generated quiz
+            questions = generated_quiz.questions.all()
+            correct_questions = []
+            incorrect_questions = []
+            score = 0
+
+            for question in questions:
+                correct_answer = question.correct_option  # Assuming correct_option field exists
+                user_answer = user_answers.get(str(question.id))  # Retrieve stored answer
+
+                if user_answer and user_answer == correct_answer:
+                    correct_questions.append(question)
+                    score += 1
+                else:
+                    incorrect_questions.append(question)
+
+            # Save the quiz summary
+            summary = Summary.objects.create(
+                user=request.user,
+                generated_quiz=generated_quiz,
+                user_answers=json.dumps(user_answers),
+                num_items=len(questions),
+                score=score,
+            )
+            summary.correct_questions.set(correct_questions)
+            summary.incorrect_questions.set(incorrect_questions)
+
+            # Render result partial
+            context = {"score": score, "num_items": len(questions)}
+            return render(request, "partials/quiz_result.html", context)
+
+        except Exception as e:
+            return HttpResponseBadRequest(f"Error processing quiz submission: {str(e)}")
+
     return HttpResponseBadRequest("Invalid Request")
+
 
 
 
