@@ -8,7 +8,6 @@ venv/
 
 # Django-specific files
 *.log
-db.sqlite3
 
 # Local settings and environment variables
 .env
