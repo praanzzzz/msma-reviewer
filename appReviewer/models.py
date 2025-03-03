@@ -83,6 +83,8 @@ class LevelOfDifficulty(models.Model):
     def __str__(self):
         return self.name
 
+
+
 class Question(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, null=True, blank=True)
@@ -101,13 +103,3 @@ class Question(models.Model):
         return self.question_text
     
 
-
-class GeneratedQuiz(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)  
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    number_of_questions = models.IntegerField()
-    questions = models.ManyToManyField(Question)  # Many-to-Many with Question
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Quiz by {self.user.email} on {self.category.name}"

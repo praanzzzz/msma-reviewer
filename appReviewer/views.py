@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from .utils import send_verification_email
 from django.contrib import messages
 from .forms import RegisterForm, LoginForm
-from .models import CustomUser, Category, Scenario, LevelOfDifficulty, Question, GeneratedQuiz
+from .models import CustomUser, Category, Scenario, LevelOfDifficulty, Question
 from django.core.signing import Signer, BadSignature, SignatureExpired
 import random
 from django.http import HttpResponseBadRequest  # For returning a 400 Bad Request response
@@ -179,6 +179,14 @@ def generate_questions(request):
     return HttpResponseBadRequest("Invalid request")
 
 
+
+@login_required
+def submit_quiz(request):
+    if request.method == "POST" and request.headers.get("HX-Request"):
+        score = 1
+        context= {"score": score}
+        return render(request, "partials/quiz_result.html", context)
+    return HttpResponseBadRequest("Invalid Request")
 
 
 

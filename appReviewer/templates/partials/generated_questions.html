@@ -4,7 +4,16 @@
   <h5>{{ category_name }}</h5>
   <p>Difficulty Level: {{ difficulty_name }}</p>
 
-<form method="POST" action="">
+
+
+
+
+
+
+<form method="POST"
+    hx-post="{% url 'submit_quiz' %}"
+    hx-swap="outerHTML">
+
     {% csrf_token %} <!-- CSRF Token for security -->
 
     {% for group in final_questions %}

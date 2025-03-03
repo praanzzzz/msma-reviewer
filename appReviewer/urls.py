@@ -18,6 +18,7 @@ urlpatterns = [
 
     # partial pages
     path('generate_questions/', views.generate_questions, name='generate_questions'),
+    path('submit_quiz', views.submit_quiz, name="submit_quiz"),
 ]
 
 # it enables django to fetch static files during developmemt phase.
