@@ -3,43 +3,79 @@
 {% block content %}
 
 
-<div class="container d-flex justify-content-center align-items-center vh-100">
-    <div>
-        <form
-            id ="selcatform"
-            hx-post="{% url 'generate_questions' %}"
-            hx-target="#selcatform"
-            hx-swap="afterHTML"
-        >
-            {% csrf_token %}
-            <h1>Select Category</h1>
-            <div class="mb-3">
-                <label for="categorySelect" class="form-label">Select Category</label>
-                <select id="categorySelect" name="category" class="form-select" required>
-                    <option value="" disabled selected>Choose a category</option>
-                    {% for category in categories %}
-                        <option value="{{ category.name }}">{{ category.name }}</option>
-                    {% endfor %}
-                </select>
+
+<div id="takeexam" class="container-fluid">
+    <div class="row">
+
+
+
+        
+        <!-- Sidebar for Generated Quiz -->
+        <aside class="col-md-3 d-none d-md-block p-3" style="margin-top: 120px; height: 70vh; overflow-y: auto;">
+            <h4 class="mb-3">Generated Quiz</h4>
+            <ul class="list-group">
+                {% for quiz in generated_quiz %}
+                    <li class="list-group-item">
+                        <a href="#" 
+                           hx-get="{% url 'fetchquizresult' quiz.id %}" 
+                           hx-target="#quizresultcontainer" 
+                           hx-swap="innerHTML"
+                           hx-trigger="click"
+                           class="text-decoration-none d-block">
+                            {{ quiz }}
+                        </a>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-muted">No questions generated yet.</li>
+                {% endfor %}
+            </ul>
+        </aside>
+
+
+
+
+
+        <!-- Main Content -->
+        <main class="col-md-9 d-flex justify-content-center align-items-center vh-100">
+            <div id ="quizresultcontainer" class="p-4 shadow-sm rounded bg-white">
+                <form
+                    hx-post="{% url 'generate_questions' %}"
+                    hx-target="#takeexam"
+                    hx-swap="outerHTML"
+                >
+                    {% csrf_token %}
+                    <h1 class="mb-4">Select Category</h1>
+
+                    <div class="mb-3">
+                        <label for="categorySelect" class="form-label">Select Category</label>
+                        <select id="categorySelect" name="category" class="form-select" required>
+                            <option value="" disabled selected>Choose a category</option>
+                            {% for category in categories %}
+                                <option value="{{ category.name }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="difficultySelect" class="form-label">Select Difficulty</label>
+                        <select id="difficultySelect" name="difficulty" class="form-select" required>
+                            <option value="" disabled selected>Choose difficulty</option>
+                            {% for difficulty in difficulties %}
+                                <option value="{{ difficulty.name }}">{{ difficulty.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="questionCount">Number of Questions:</label>
+                        <input type="number" id="questionCount" name="question_count" min="1" max="50" value="10" class="form-control" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Generate Questions</button>
+                </form>
             </div>
-
-            <div class="mb-3">
-                <label for="difficultySelect" class="form-label">Select Difficulty</label>
-                <select id="difficultySelect" name="difficulty" class="form-select" required>
-                    <option value="" disabled selected>Choose difficulty</option>
-                    {% for difficulty in difficulties %}
-                        <option value="{{ difficulty.name }}">{{ difficulty.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <label for="questionCount">Number of Questions:</label>
-            <input type="number" id="questionCount" name="question_count" min="1" max="50" value="10" required>
-
-            <button type="submit">Generate Questions</button>
-        </form>
+        </main>
     </div>
 </div>
-
 
 {% endblock %}

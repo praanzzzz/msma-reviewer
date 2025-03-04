@@ -112,6 +112,9 @@ class GeneratedQuiz(models.Model):
     questions = models.ManyToManyField(Question)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at'] 
+
     def __str__(self):
         return f"Quiz {self.id} by {self.user.email} - {self.category.name} ({self.level_of_difficulty})"
 
@@ -126,6 +129,9 @@ class Summary(models.Model):
     num_items = models.IntegerField()
     score = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at'] 
 
     def __str__(self):
         return (f"{self.user.email} - {self.generated_quiz.category.name} | "

@@ -1,5 +1,4 @@
 from django.contrib.auth.decorators import login_required
-from django.utils import timezone
 from django.shortcuts import render, redirect
 from .utils import send_verification_email
 from django.contrib import messages
@@ -7,8 +6,8 @@ from .forms import RegisterForm, LoginForm
 from .models import CustomUser, Category, Scenario, LevelOfDifficulty, Question, GeneratedQuiz, Summary
 from django.core.signing import Signer, BadSignature, SignatureExpired
 import random
-from django.http import HttpResponseBadRequest  # For returning a 400 Bad Request response
-from django.shortcuts import get_object_or_404  # For fetching an object or returning a 404 response if not found
+from django.http import HttpResponseBadRequest 
+from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 signer = Signer()
 import json
@@ -92,7 +91,11 @@ def my_logout(request):
 def reviewer(request):
     categories = Category.objects.all()
     difficulties = LevelOfDifficulty.objects.all()
-    context = {"categories": categories, "difficulties": difficulties}
+    generated_quiz = GeneratedQuiz.objects.filter(user_id=request.user.id)
+    context = {
+        "categories": categories, 
+        "difficulties": difficulties,
+        "generated_quiz": generated_quiz}
     return render(request, "appReviewer/reviewer.html", context)
 
 
@@ -201,9 +204,6 @@ def submit_quiz(request):
                     question_id = key.split("_")[1]  # Extract question ID
                     user_answers[question_id] = value  # Store answer
 
-            # Debugging: Print extracted answers
-            print(f"Extracted Answers: {user_answers}")
-
             if not user_answers:
                 return HttpResponseBadRequest("No answers received.")
 
@@ -213,10 +213,11 @@ def submit_quiz(request):
             incorrect_questions = []
             score = 0
 
-            for question in questions:
-                correct_answer = question.correct_option  # Assuming correct_option field exists
-                user_answer = user_answers.get(str(question.id))  # Retrieve stored answer
 
+            # determines if user is correct or wrong per question
+            for question in questions:
+                correct_answer = question.correct_option 
+                user_answer = user_answers.get(str(question.id))  # Retrieve stored answer
                 if user_answer and user_answer == correct_answer:
                     correct_questions.append(question)
                     score += 1
@@ -233,15 +234,36 @@ def submit_quiz(request):
             )
             summary.correct_questions.set(correct_questions)
             summary.incorrect_questions.set(incorrect_questions)
-
             # Render result partial
-            context = {"score": score, "num_items": len(questions)}
+            context = {
+                "score": score, 
+                "num_items": len(questions),
+                }
             return render(request, "partials/quiz_result.html", context)
-
         except Exception as e:
             return HttpResponseBadRequest(f"Error processing quiz submission: {str(e)}")
 
-    return HttpResponseBadRequest("Invalid Request")
+
+
+# used in sidebar to dynamically show quiz result
+@login_required
+def fetchquizresult(request, quiz_id):
+    quiz = get_object_or_404(GeneratedQuiz, id=quiz_id)
+    summaries = Summary.objects.filter(generated_quiz=quiz)  # Get all summaries for debugging
+    if summaries.exists():
+        summary = summaries.first()
+    else:
+        summary = None
+    # Compute percentage safely
+    percentage = 0
+    if summary and summary.num_items > 0:
+        percentage = (summary.score / summary.num_items) * 100
+    context = {
+       "quiz": quiz,
+       "summary": summary,
+       "percentage": percentage,
+    }
+    return render(request, "partials/fetchquizresult.html", context)
 
 
 

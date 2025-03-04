@@ -1,0 +1,30 @@
+
+
+
+
+
+<div id="quizResultContainer" class="card shadow-sm border-0">
+    <div class="card-header bg-primary text-white text-center">
+        <h5 class="mb-0">Quiz Result: {{ quiz }}</h5>
+    </div>
+    <div class="card-body text-center">
+        {% if summary %}
+            <h4 class="fw-bold">
+                Score: {{ summary.score }} / {{ summary.num_items }} 
+                <span class="text-muted">({{ percentage }}%)</span>
+            </h4>
+
+            {% if percentage >= 75 %}
+                <p class="text-success fw-bold">🎉 Great job! You passed!</p>
+            {% elif percentage >= 50 %}
+                <p class="text-warning fw-bold">👍 Good effort! Keep practicing.</p>
+            {% else %}
+                <p class="text-danger fw-bold">❌ Don't give up! Try again.</p>
+            {% endif %}
+
+            <button class="btn btn-primary mt-3">View Feedback</button>
+        {% else %}
+            <p class="text-muted">No results available for this quiz.</p>
+        {% endif %}
+    </div>
+</div>
