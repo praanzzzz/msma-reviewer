@@ -4,7 +4,7 @@
 
  <form method="POST" 
     hx-post="{% url 'submit_quiz' %}"
-    hx-swap="outerHTML"
+    hx-swap="outerHTML" 
     hx-vals='{"generated_quiz_id": "{{ generated_quiz_id }}"}'>
 
     {% csrf_token %} <!-- CSRF Token for security -->

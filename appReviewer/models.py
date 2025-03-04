@@ -111,6 +111,7 @@ class GeneratedQuiz(models.Model):
     scenario = models.ManyToManyField(Scenario, blank=True) 
     questions = models.ManyToManyField(Question)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_finished = models.BooleanField(default = False)
 
     class Meta:
         ordering = ['-created_at'] 

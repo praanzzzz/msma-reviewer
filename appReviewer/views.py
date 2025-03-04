@@ -234,6 +234,10 @@ def submit_quiz(request):
             )
             summary.correct_questions.set(correct_questions)
             summary.incorrect_questions.set(incorrect_questions)
+
+            # marks the generated_quiz table to finished = true
+            generated_quiz.is_finished = True
+            generated_quiz.save()
             # Render result partial
             context = {
                 "score": score, 
