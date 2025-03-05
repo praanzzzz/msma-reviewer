@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from .utils import send_verification_email
 from django.contrib import messages
 from .forms import RegisterForm, LoginForm
-from .models import CustomUser, Category, Scenario, LevelOfDifficulty, Question, GeneratedQuiz, Summary
+from .models import CustomUser, Course, Subject, Topic, Scenario, LevelOfDifficulty, Question, GeneratedQuiz, Summary
 from django.core.signing import Signer, BadSignature, SignatureExpired
 import random
 from django.http import HttpResponseBadRequest 
@@ -89,7 +89,7 @@ def my_logout(request):
 
 @login_required
 def reviewer(request):
-    categories = Category.objects.all()
+    categories = Subject.objects.all()
     difficulties = LevelOfDifficulty.objects.all()
     generated_quiz = GeneratedQuiz.objects.filter(user_id=request.user.id)
     context = {
@@ -109,7 +109,7 @@ def generate_questions(request):
         difficulty_name = request.POST.get("difficulty")
 
         # Fetch Category and LevelOfDifficulty objects from the database
-        category = get_object_or_404(Category, name=category_name)
+        category = get_object_or_404(Subject, name=category_name)
         difficulty = get_object_or_404(LevelOfDifficulty, name__iexact=difficulty_name)
 
         # Get all questions that have a scenario (grouped by scenario)
@@ -157,6 +157,9 @@ def generate_questions(request):
         final_questions = grouped_questions
         if non_scenario_questions:
             final_questions.append({"scenario": None, "questions": non_scenario_questions})
+
+
+
 
        # Create a GeneratedQuiz instance and save it  
         generated_quiz = GeneratedQuiz.objects.create(

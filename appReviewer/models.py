@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.auth.hashers import make_password
+from datetime import timedelta
 
 
 # enables email verification instead of username
@@ -43,7 +44,7 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    # Ensure password is always hashed before saving
+    # Ensures password is always hashed before saving
     def save(self, *args, **kwargs):
         if self.password and not self.password.startswith("pbkdf2_"):
             self.password = make_password(self.password)
@@ -55,30 +56,43 @@ class CustomUser(AbstractUser):
 
 
 
-class Category(models.Model):
-    name = models.CharField(max_length=255)
 
+
+class Course(models.Model):
+    name = models.CharField(max_length=70)
     def __str__(self):
         return self.name
+
+class Subject(models.Model):
+    name = models.CharField(max_length=255)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    def __str__(self):
+        return f"{self.name} ------------{self.course}"
+    
+
+class Topic(models.Model):
+    name = models.CharField(max_length=100)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    def __str__(self):
+        return f"{self.name} --------{self.subject}"
     
 
 class Scenario(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    scene = models.TextField()
+    name = models.TextField()
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='scenario_images/', null=True, blank=True)
 
     def __str__(self):
-        return f"{self.scene}"
-
+        return f"{self.name}"
 
 
 class LevelOfDifficulty(models.Model):
     LEVEL_CHOICES = [
         ('Easy', 'Easy'),
-        ('Medium', 'Medium'),
-        ('Hard', 'Hard'),
+        ('Moderate', 'Moderate'),
+        ('Difficult', 'Difficult'),
     ]
-    name = models.CharField(max_length=10, choices=LEVEL_CHOICES, unique=True)
+    name = models.CharField(max_length=13, choices=LEVEL_CHOICES, unique=True)
 
     def __str__(self):
         return self.name
@@ -86,9 +100,6 @@ class LevelOfDifficulty(models.Model):
 
 
 class Question(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, null=True, blank=True)
-    level_of_difficulty = models.ForeignKey(LevelOfDifficulty, on_delete=models.CASCADE)
     question_text = models.TextField()
     image = models.ImageField(upload_to='question_images/', null=True, blank=True)
     option_a = models.TextField()  
@@ -98,6 +109,9 @@ class Question(models.Model):
     correct_option = models.CharField(
         max_length=1, choices=[('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D')]
     )
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, null=True, blank=True)
+    level_of_difficulty = models.ForeignKey(LevelOfDifficulty, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.question_text
@@ -105,35 +119,41 @@ class Question(models.Model):
 
 
 class GeneratedQuiz(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete = models.CASCADE)
-    category = models.ForeignKey(Category, on_delete = models.CASCADE)
-    level_of_difficulty = models.ForeignKey(LevelOfDifficulty, on_delete = models.CASCADE)
+    TIME_LIMIT_CHOICES = [
+        (1, "1 hour"),
+        (2, "2 hours"),
+        (3, "3 hours") 
+    ]
+    # id as identifier
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     scenario = models.ManyToManyField(Scenario, blank=True) 
     questions = models.ManyToManyField(Question)
     created_at = models.DateTimeField(auto_now_add=True)
     is_finished = models.BooleanField(default = False)
+    time_duration = models.DurationField(choices=TIME_LIMIT_CHOICES)
 
     class Meta:
         ordering = ['-created_at'] 
 
     def __str__(self):
-        return f"Quiz {self.id} by {self.user.email} - {self.category.name} ({self.level_of_difficulty})"
+        return f"Quiz {self.id} by {self.user.email} - {self.subject.name} "
 
 
 
 class Summary(models.Model):
+    # id as identifier
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     generated_quiz = models.ForeignKey(GeneratedQuiz, on_delete=models.CASCADE, related_name="summaries")
     user_answers = models.JSONField(default=dict)  # Example: {"5": "A", "7": "C"}
     correct_questions = models.ManyToManyField(Question, related_name="correct_answers", blank=True)
     incorrect_questions = models.ManyToManyField(Question, related_name="incorrect_answers", blank=True)
-    num_items = models.IntegerField()
     score = models.IntegerField()
+    num_items = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at'] 
 
     def __str__(self):
-        return (f"{self.user.email} - {self.generated_quiz.category.name} | "
-                f"{self.generated_quiz.level_of_difficulty} - {self.score}/{self.num_items}")
+        return (f"Summary {self.id} by {self.user.email} - {self.generated_quiz.subject.name} | {self.score}/{self.num_items}")
