@@ -192,7 +192,9 @@ def generate_questions(request):
         # Render the template with grouped questions
         context = {
             "final_questions": final_questions,
-            "generated_quiz_id": generated_quiz.id
+            "generated_quiz_id": generated_quiz.id,
+            "subject": subject.name,
+            "duration":duration.time_duration,
         }
         return render(request, "partials/generated_questions.html", context)
 

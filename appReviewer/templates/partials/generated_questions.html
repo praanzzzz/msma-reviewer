@@ -1,25 +1,22 @@
 <br><br><br><br><br>
-<h5>{{  }}</h5>
-<p>Difficulty Level: {{ difficulty_name }}</p>
+<h5>{{ subject }}</h5>
+<p>Exam Duration: {{ duration }} hrs</p>
 
- <form method="POST" 
+<form method="POST" 
     hx-post="{% url 'submit_quiz' %}"
     hx-swap="outerHTML" 
     hx-vals='{"generated_quiz_id": "{{ generated_quiz_id }}"}'>
 
-    {% csrf_token %} <!-- CSRF Token for security -->
+    {% csrf_token %}
 
     <!-- Hidden field to pass generated_quiz_id -->
-    <input type="hidden" name="generated_quiz_id" value="{{ generated_quiz.id }}">
-
-    <!-- Hidden input to ensure an empty value is submitted if unanswered -->
-    <!-- <input type="hidden" name="answers{{ question.id }}" value=""> -->
+    <input type="hidden" name="generated_quiz_id" value="{{ generated_quiz_id }}">
 
     {% for group in final_questions %}
         {% if group.scenario %}
             <!-- Display Scenario -->
             <div class="scenario">
-                <h6>{{ group.scenario.scene }}</h6>
+                <h6>{{ group.scenario.name }}</h6>  
                 {% if group.scenario.image %}
                     <img src="{{ group.scenario.image.url }}" alt="Scenario Image">
                 {% endif %}
@@ -32,39 +29,49 @@
                     {% if question.scenario %}
                         <p class="text-muted"><em>Refer to the scenario above.</em></p>
                     {% endif %}
+                    <!-- <p class="card-title"><strong>{{ forloop.parentloop.counter }}. {{ question.question_text }}</strong></p> -->
                     <p class="card-title">{{ question.question_text }}</p>
 
                     {% if question.image %}
                         <img src="{{ question.image.url }}" alt="Question Image">
                     {% endif %}
 
-                    <!-- Hidden input to track question ID (now using "question_ids[]" for proper list handling) -->
+                    <!-- Hidden input for tracking question IDs -->
                     <input type="hidden" name="question_ids[]" value="{{ question.id }}">
 
-                    <!-- Radio Button Options (Only one choice per question) -->
+                    <!-- Radio Button Options -->
                     <div class="form-check">
                         <input type="radio" name="answers_{{ question.id }}" id="option_a_{{ question.id }}"
                             class="form-check-input" value="A" required>
-                        <label for="option_a_{{ question.id }}" class="form-check-label">A. {{ question.option_a }}</label>
+                        <label for="option_a_{{ question.id }}" class="form-check-label">
+                            A. {{ question.option_a }}
+                        </label>
                     </div>
-
+                    
                     <div class="form-check">
                         <input type="radio" name="answers_{{ question.id }}" id="option_b_{{ question.id }}"
                             class="form-check-input" value="B" required>
-                        <label for="option_b_{{ question.id }}" class="form-check-label">B. {{ question.option_b }}</label>
+                        <label for="option_b_{{ question.id }}" class="form-check-label">
+                            B. {{ question.option_b }}
+                        </label>
                     </div>
-
+                    
                     <div class="form-check">
                         <input type="radio" name="answers_{{ question.id }}" id="option_c_{{ question.id }}"
                             class="form-check-input" value="C" required>
-                        <label for="option_c_{{ question.id }}" class="form-check-label">C. {{ question.option_c }}</label>
+                        <label for="option_c_{{ question.id }}" class="form-check-label">
+                            C. {{ question.option_c }}
+                        </label>
                     </div>
-
+                    
                     <div class="form-check">
                         <input type="radio" name="answers_{{ question.id }}" id="option_d_{{ question.id }}"
                             class="form-check-input" value="D" required>
-                        <label for="option_d_{{ question.id }}" class="form-check-label">D. {{ question.option_d }}</label>
+                        <label for="option_d_{{ question.id }}" class="form-check-label">
+                            D. {{ question.option_d }}
+                        </label>
                     </div>
+                    
                 </div>
             </div>
         {% endfor %}
@@ -73,8 +80,3 @@
     <!-- Submit Button -->
     <button type="submit" class="btn btn-primary mt-3">Submit Quiz</button>
 </form>
-
-
-
-
-<br><br><br><br>
