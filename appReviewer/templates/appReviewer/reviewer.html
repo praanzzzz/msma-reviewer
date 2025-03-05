@@ -12,25 +12,21 @@
             <h4 class="mb-3">Generated Quiz</h4>
             <ul class="list-group">
                 {% for quiz in generated_quiz %}
-                    <li class="list-group-item">
-                        <a href="#" 
-                           hx-get="{% url 'fetchquizresult' quiz.id %}" 
-                           hx-target="#quizresultcontainer" 
-                           hx-swap="innerHTML"
-                           hx-trigger="click"
-                           class="text-decoration-none d-block">
-                            {{ quiz }}
-                        </a>
-                        <span class="badge {% if quiz.is_finished %}bg-success{% else %}bg-warning{% endif %}">
-                            {% if quiz.is_finished %}
-                                Completed
-                            {% else %}
-                                Unfinished
-                            {% endif %}
-                        </span>
-                    </li>
+                <li class="list-group-item">
+                    <a href="#" hx-get="{% url 'fetchquizresult' quiz.id %}" hx-target="#quizresultcontainer"
+                        hx-swap="innerHTML" hx-trigger="click" class="text-decoration-none d-block">
+                        {{ quiz }}
+                    </a>
+                    <span class="badge {% if quiz.is_finished %}bg-success{% else %}bg-warning{% endif %}">
+                        {% if quiz.is_finished %}
+                        Completed
+                        {% else %}
+                        Unfinished
+                        {% endif %}
+                    </span>
+                </li>
                 {% empty %}
-                    <li class="list-group-item text-muted">No questions generated yet.</li>
+                <li class="list-group-item text-muted">No questions generated yet.</li>
                 {% endfor %}
             </ul>
         </aside>
@@ -41,28 +37,23 @@
 
         <!-- Main Content -->
         <main class="col-md-9 d-flex align-items-center vh-100">
-            <div id ="quizresultcontainer" class="p-4 shadow-sm rounded bg-white">
-                <form
-                    hx-post="{% url 'generate_questions' %}"
-                    hx-target="#takeexam"
-                    hx-swap="outerHTML"
-                >
+            <div id="quizresultcontainer" class="p-4 shadow-sm rounded bg-white">
+                <form hx-post="{% url 'generate_questions' %}" hx-target="#takeexam" hx-swap="outerHTML">
                     {% csrf_token %}
+
                     <!-- Course Selection -->
                     <div class="mb-3">
                         <label class="form-label">Select Course</label>
                         <div class="d-flex flex-wrap gap-2">
                             {% for course in courses %}
-                                <button type="button"
-                                    class="btn btn-outline-primary"
-                                    hx-get="{% url 'fetch_subjects' course.id %}"
-                                    hx-target="#subjectsContainer"
-                                    hx-swap="innerHTML"
-                                    hx-trigger="click">
-                                    {{ course.name }}
-                                </button>
+                            <button type="button" class="btn btn-outline-primary course-btn"
+                                data-value="{{ course.id }}" hx-get="{% url 'fetch_subjects' course.id %}"
+                                hx-target="#subjectsContainer" hx-swap="innerHTML" hx-trigger="click">
+                                {{ course.name }}
+                            </button>
                             {% endfor %}
                         </div>
+                        <input type="hidden" name="selected_course" id="selectedCourse" required>
                     </div>
 
                     <!-- Subject Selection -->
@@ -71,26 +62,22 @@
                         <div id="subjectsContainer" class="d-flex flex-wrap gap-2">
                             <p class="text-muted">Select a course first to load subjects.</p>
                         </div>
+                        <input type="hidden" name="selected_subject" id="selectedSubject" required>
                     </div>
 
-
-
-                    <!-- exam duration choices -->
+                    <!-- Exam Duration Choices -->
                     <div class="mb-3">
                         <label class="form-label">Duration of Exam:</label>
                         <div class="d-flex flex-wrap gap-2">
                             {% for duration in exam_duration %}
-                                <button type="button" 
-                                    class="btn btn-outline-dark duration-btn"
-                                    data-value="{{ duration.time_duration }}">
-                                    {{ duration }}
-                                </button>
+                            <button type="button" class="btn btn-outline-dark duration-btn"
+                                data-value="{{ duration.time_duration }}">
+                                {{ duration }}
+                            </button>
                             {% endfor %}
                         </div>
                         <input type="hidden" name="exam_duration" id="selectedDuration" required>
                     </div>
-
-
 
                     <button type="submit" class="btn btn-primary w-100">Generate Questions</button>
                 </form>
@@ -98,12 +85,30 @@
         </main>
     </div>
 </div>
+
+
+
+
+
+
 <script>
     document.addEventListener("click", function(event) {
-        // Handle subject selection
+        // Handle course selection
+        if (event.target.classList.contains("course-btn")) {
+            document.querySelectorAll(".course-btn").forEach(btn => btn.classList.remove("active"));
+            event.target.classList.add("active");
+    
+            // Store selected course in the hidden input field
+            document.getElementById("selectedCourse").value = event.target.dataset.value;
+        }
+    
+        // Handle subject selection (only if it's loaded dynamically)
         if (event.target.classList.contains("subject-btn")) {
             document.querySelectorAll(".subject-btn").forEach(btn => btn.classList.remove("active"));
             event.target.classList.add("active");
+    
+            // Store selected subject in the hidden input field
+            document.getElementById("selectedSubject").value = event.target.dataset.value;
         }
     
         // Handle exam duration selection

@@ -108,34 +108,40 @@ def fetch_subjects(request, course_id):
 
 
 
+
 @login_required
 def generate_questions(request):
     if request.method == "POST" and request.headers.get("HX-Request"):
-        # Get user-selected category, difficulty, and question count from the form
-        category_name = request.POST.get("category")
-        question_count = int(request.POST.get("question_count"))
-        difficulty_name = request.POST.get("difficulty")
+        # Get user-selected course, subject and duration from the form
+        selectedCourse = request.POST.get("selected_course")
+        selectedSubject = request.POST.get("selected_subject")
+        selectedDuration = request.POST.get("exam_duration")
 
-        # Fetch Category and LevelOfDifficulty objects from the database
-        category = get_object_or_404(Subject, name=category_name)
-        difficulty = get_object_or_404(LevelOfDifficulty, name__iexact=difficulty_name)
+        course = get_object_or_404(Course, id=int(selectedCourse))
+        subject = get_object_or_404(Subject, id=int(selectedSubject), course=course)
+        duration = get_object_or_404(TimeLimit, time_duration=int(selectedDuration))
 
-        # Get all questions that have a scenario (grouped by scenario)
+        # Get topics under the selected subject
+        topics = Topic.objects.filter(subject=subject)
+
+        # Determine the number of questions to fetch based on duration
+        duration_map = {1: 25, 2: 50, 3: 100}
+        question_count = duration_map.get(duration.time_duration, 25)
+
+        # Fetch scenario-based questions
         scenario_questions = list(Question.objects.filter(
-            category=category,
-            level_of_difficulty=difficulty
+            topic__in=topics
         ).exclude(scenario__isnull=True).order_by("scenario"))
 
-        # Group questions by scenario (only add a scenario once)
         grouped_questions = []
         seen_scenarios = set()
-        scenario_question_count = 0  # Track how many scenario questions are included
+        scenario_question_count = 0
 
         for question in scenario_questions:
             if question.scenario not in seen_scenarios:
                 grouped_questions.append({
-                    "scenario": question.scenario,  
-                    "questions": []  
+                    "scenario": question.scenario,
+                    "questions": []
                 })
                 seen_scenarios.add(question.scenario)
 
@@ -145,23 +151,21 @@ def generate_questions(request):
                     if scenario_question_count < question_count:
                         group["questions"].append(question)
                         scenario_question_count += 1
-        
-        #  Shuffle questions **inside each scenario**
-        for group in grouped_questions:
-            random.shuffle(group["questions"])  
 
-        # Get non-scenario questions, ensuring we don’t exceed question_count
+        # Shuffle scenario questions
+        for group in grouped_questions:
+            random.shuffle(group["questions"])
+
+        # Fetch non-scenario questions
         remaining_slots = question_count - scenario_question_count
         non_scenario_questions = list(Question.objects.filter(
-            category=category,
-            level_of_difficulty=difficulty,
+            topic__in=topics,
             scenario__isnull=True
         ).order_by("?")[:remaining_slots])
 
-        #  Shuffle non-scenario questions before adding them
         random.shuffle(non_scenario_questions)
 
-        # Merge scenario-based questions with non-scenario questions
+        # Merge scenario and non-scenario questions
         final_questions = grouped_questions
         if non_scenario_questions:
             final_questions.append({"scenario": None, "questions": non_scenario_questions})
@@ -169,29 +173,32 @@ def generate_questions(request):
 
 
 
-       # Create a GeneratedQuiz instance and save it  
+        # Create and save the GeneratedQuiz instance
         generated_quiz = GeneratedQuiz.objects.create(
-            user=request.user,  
-            category=category,
-            level_of_difficulty=difficulty,  # Ensure difficulty level is included
+            user=request.user,
+            subject=subject,
+            duration=duration  # ✅ Include duration
         )
-        # Extract all selected questions and save them in ManyToMany field  
-        all_questions = [q for group in final_questions for q in group["questions"]]  
-        generated_quiz.questions.set(all_questions)  # Assigns questions to the quiz  
 
-        # Extract scenarios from the selected questions and assign them  
-        scenarios = {q.scenario for q in all_questions if q.scenario}  # Get unique scenarios
-        generated_quiz.scenario.set(scenarios)  # Assign scenarios to the quiz  
+        # Assign questions to the quiz
+        all_questions = [q for group in final_questions for q in group["questions"]]
+        generated_quiz.questions.set(all_questions)
+
+        # Assign scenarios if any
+        scenarios = {q.scenario for q in all_questions if q.scenario}
+        if scenarios:
+            generated_quiz.scenario.set(scenarios)
 
         # Render the template with grouped questions
         context = {
             "final_questions": final_questions,
-            "category_name": category_name,
-            "difficulty_name": difficulty_name,
             "generated_quiz_id": generated_quiz.id
         }
         return render(request, "partials/generated_questions.html", context)
+
     return HttpResponseBadRequest("Invalid request")
+
+
 
 
 
