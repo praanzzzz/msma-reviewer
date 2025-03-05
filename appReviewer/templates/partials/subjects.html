@@ -1,0 +1,7 @@
+{% for subject in subjects %}
+    <button type="button" class="btn btn-outline-secondary subject-btn" data-value="{{ subject.id }}">
+        {{ subject.name }}
+    </button>
+{% empty %}
+    <p class="text-muted">No subjects available for this course.</p>
+{% endfor %}

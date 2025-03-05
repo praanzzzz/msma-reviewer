@@ -101,6 +101,12 @@ def reviewer(request):
     return render(request, "appReviewer/reviewer.html", context)
 
 
+@login_required
+def fetch_subjects(request, course_id):
+    subjects = Subject.objects.filter(course_id=course_id)
+    return render(request, "partials/subjects.html", {"subjects": subjects})
+
+
 
 @login_required
 def generate_questions(request):

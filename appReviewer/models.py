@@ -126,6 +126,9 @@ class TimeLimit(models.Model):
         ]
     time_duration = models.IntegerField(choices=TIME_LIMIT_CHOICES)
 
+    class Meta:
+        ordering = ['time_duration'] 
+
     def __str__(self):
         return self.get_time_duration_display()
 

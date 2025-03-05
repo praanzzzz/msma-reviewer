@@ -40,7 +40,7 @@
 
 
         <!-- Main Content -->
-        <main class="col-md-9 d-flex justify-content-center align-items-center vh-100">
+        <main class="col-md-9 d-flex align-items-center vh-100">
             <div id ="quizresultcontainer" class="p-4 shadow-sm rounded bg-white">
                 <form
                     hx-post="{% url 'generate_questions' %}"
@@ -48,32 +48,49 @@
                     hx-swap="outerHTML"
                 >
                     {% csrf_token %}
-                    <h1 class="mb-4">Select Category</h1>
-
+                    <!-- Course Selection -->
                     <div class="mb-3">
-                        <label for="categorySelect" class="form-label">Select Course</label>
-                        <select id="categorySelect" name="category" class="form-select" required>
-                            <option value="" disabled selected>Choose a category</option>
+                        <label class="form-label">Select Course</label>
+                        <div class="d-flex flex-wrap gap-2">
                             {% for course in courses %}
-                                <option value="{{ course.name }}">{{ course.name }}</option>
+                                <button type="button"
+                                    class="btn btn-outline-primary"
+                                    hx-get="{% url 'fetch_subjects' course.id %}"
+                                    hx-target="#subjectsContainer"
+                                    hx-swap="innerHTML"
+                                    hx-trigger="click">
+                                    {{ course.name }}
+                                </button>
                             {% endfor %}
-                        </select>
+                        </div>
                     </div>
 
+                    <!-- Subject Selection -->
                     <div class="mb-3">
-                        <label for="difficultySelect" class="form-label">Select Subject</label>
-                        <select id="difficultySelect" name="difficulty" class="form-select" required>
-                            <option value="" disabled selected>Choose Subject</option>
-                            {% for subject in subjects %}
-                                <option value="{{ difficulty.name }}">{{ subject.name }}</option>
-                            {% endfor %}
-                        </select>
+                        <label class="form-label">Select Subject</label>
+                        <div id="subjectsContainer" class="d-flex flex-wrap gap-2">
+                            <p class="text-muted">Select a course first to load subjects.</p>
+                        </div>
                     </div>
 
+
+
+                    <!-- exam duration choices -->
                     <div class="mb-3">
-                        <label for="questionCount">Duration of Exam:</label>
-                        <input type="number" id="questionCount" name="question_count" min="1" max="50" value="10" class="form-control" required>
+                        <label class="form-label">Duration of Exam:</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for duration in exam_duration %}
+                                <button type="button" 
+                                    class="btn btn-outline-dark duration-btn"
+                                    data-value="{{ duration.time_duration }}">
+                                    {{ duration }}
+                                </button>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="exam_duration" id="selectedDuration" required>
                     </div>
+
+
 
                     <button type="submit" class="btn btn-primary w-100">Generate Questions</button>
                 </form>
@@ -81,5 +98,24 @@
         </main>
     </div>
 </div>
+<script>
+    document.addEventListener("click", function(event) {
+        // Handle subject selection
+        if (event.target.classList.contains("subject-btn")) {
+            document.querySelectorAll(".subject-btn").forEach(btn => btn.classList.remove("active"));
+            event.target.classList.add("active");
+        }
+    
+        // Handle exam duration selection
+        if (event.target.classList.contains("duration-btn")) {
+            document.querySelectorAll(".duration-btn").forEach(btn => btn.classList.remove("active"));
+            event.target.classList.add("active");
+    
+            // Store selected duration in the hidden input field
+            document.getElementById("selectedDuration").value = event.target.dataset.value;
+        }
+    });
+    </script>
+    
 
 {% endblock %}
