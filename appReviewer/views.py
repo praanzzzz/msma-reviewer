@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from .utils import send_verification_email
 from django.contrib import messages
 from .forms import RegisterForm, LoginForm
-from .models import CustomUser, Course, Subject, Topic, Scenario, LevelOfDifficulty, Question, GeneratedQuiz, Summary
+from .models import CustomUser, Course, Subject, Topic, Scenario, LevelOfDifficulty, Question, GeneratedQuiz, Summary, TimeLimit
 from django.core.signing import Signer, BadSignature, SignatureExpired
 import random
 from django.http import HttpResponseBadRequest 
@@ -89,12 +89,14 @@ def my_logout(request):
 
 @login_required
 def reviewer(request):
-    categories = Subject.objects.all()
-    difficulties = LevelOfDifficulty.objects.all()
+    courses = Course.objects.all()
+    subjects = Subject.objects.all()
+    exam_duration = TimeLimit.objects.all()
     generated_quiz = GeneratedQuiz.objects.filter(user_id=request.user.id)
     context = {
-        "categories": categories, 
-        "difficulties": difficulties,
+        "courses":courses,
+        "subjects":subjects,
+        "exam_duration":exam_duration,
         "generated_quiz": generated_quiz}
     return render(request, "appReviewer/reviewer.html", context)
 

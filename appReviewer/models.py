@@ -118,20 +118,28 @@ class Question(models.Model):
     
 
 
-class GeneratedQuiz(models.Model):
+class TimeLimit(models.Model):
     TIME_LIMIT_CHOICES = [
-        (1, "1 hour"),
-        (2, "2 hours"),
-        (3, "3 hours") 
-    ]
+            (1, "1 hour"),
+            (2, "2 hours"),
+            (3, "3 hours") 
+        ]
+    time_duration = models.IntegerField(choices=TIME_LIMIT_CHOICES)
+
+    def __str__(self):
+        return self.get_time_duration_display()
+
+
+
+class GeneratedQuiz(models.Model):
     # id as identifier
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    duration = models.ForeignKey(TimeLimit, on_delete = models.CASCADE, null=True)
     scenario = models.ManyToManyField(Scenario, blank=True) 
     questions = models.ManyToManyField(Question)
     created_at = models.DateTimeField(auto_now_add=True)
     is_finished = models.BooleanField(default = False)
-    time_duration = models.DurationField(choices=TIME_LIMIT_CHOICES)
 
     class Meta:
         ordering = ['-created_at'] 

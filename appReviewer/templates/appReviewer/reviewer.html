@@ -51,27 +51,27 @@
                     <h1 class="mb-4">Select Category</h1>
 
                     <div class="mb-3">
-                        <label for="categorySelect" class="form-label">Select Category</label>
+                        <label for="categorySelect" class="form-label">Select Course</label>
                         <select id="categorySelect" name="category" class="form-select" required>
                             <option value="" disabled selected>Choose a category</option>
-                            {% for category in categories %}
-                                <option value="{{ category.name }}">{{ category.name }}</option>
+                            {% for course in courses %}
+                                <option value="{{ course.name }}">{{ course.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label for="difficultySelect" class="form-label">Select Difficulty</label>
+                        <label for="difficultySelect" class="form-label">Select Subject</label>
                         <select id="difficultySelect" name="difficulty" class="form-select" required>
-                            <option value="" disabled selected>Choose difficulty</option>
-                            {% for difficulty in difficulties %}
-                                <option value="{{ difficulty.name }}">{{ difficulty.name }}</option>
+                            <option value="" disabled selected>Choose Subject</option>
+                            {% for subject in subjects %}
+                                <option value="{{ difficulty.name }}">{{ subject.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label for="questionCount">Number of Questions:</label>
+                        <label for="questionCount">Duration of Exam:</label>
                         <input type="number" id="questionCount" name="question_count" min="1" max="50" value="10" class="form-control" required>
                     </div>
 
