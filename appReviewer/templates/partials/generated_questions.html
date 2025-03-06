@@ -29,7 +29,7 @@
                     {% if question.scenario %}
                         <p class="text-muted"><em>Refer to the scenario above.</em></p>
                     {% endif %}
-                    <!-- <p class="card-title"><strong>{{ forloop.parentloop.counter }}. {{ question.question_text }}</strong></p> -->
+                    {{question.level_of_difficulty}}
                     <p class="card-title">{{ question.question_text }}</p>
 
                     {% if question.image %}

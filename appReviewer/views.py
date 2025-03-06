@@ -108,6 +108,13 @@ def fetch_subjects(request, course_id):
 
 
 
+'''
+    number of questions do not work
+    add timer
+    randomize the scenario based questions and non scenario based question
+    shuffle the options
+    30% 40% 30% difficulty
+'''
 
 @login_required
 def generate_questions(request):
@@ -170,14 +177,11 @@ def generate_questions(request):
         if non_scenario_questions:
             final_questions.append({"scenario": None, "questions": non_scenario_questions})
 
-
-
-
         # Create and save the GeneratedQuiz instance
         generated_quiz = GeneratedQuiz.objects.create(
             user=request.user,
             subject=subject,
-            duration=duration  # ✅ Include duration
+            duration=duration 
         )
 
         # Assign questions to the quiz
@@ -199,7 +203,6 @@ def generate_questions(request):
         return render(request, "partials/generated_questions.html", context)
 
     return HttpResponseBadRequest("Invalid request")
-
 
 
 
