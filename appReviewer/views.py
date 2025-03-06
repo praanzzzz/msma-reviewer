@@ -110,115 +110,115 @@ def fetch_subjects(request, course_id):
 
 '''
     DATA STRUCT AND ALGO TASKS:
+        done=====add numbering
         add timer
-        randomize the scenario based questions and non scenario based question
-        30% 40% 30% difficulty
+        done ========(but still grouped by all shuffled scenario and all shuffled non scenario) randomize the scenario based questions and non scenario based question
+        partially done =====30% 40% 30% difficulty
+        done ======== shuffle options
     FEATURE RELATED TASKS:
         view feedback
         continue unfinished quiz
 '''
 
+
 @login_required
 def generate_questions(request):
     if request.method == "POST" and request.headers.get("HX-Request"):
-        # Get user-selected course, subject and duration from the form
+        # Retrieve selected course, subject, and exam duration from the POST request
         selectedCourse = request.POST.get("selected_course")
         selectedSubject = request.POST.get("selected_subject")
         selectedDuration = request.POST.get("exam_duration")
 
+        # Fetch the corresponding Course, Subject (linked to the Course), and TimeLimit objects
         course = get_object_or_404(Course, id=int(selectedCourse))
         subject = get_object_or_404(Subject, id=int(selectedSubject), course=course)
         duration = get_object_or_404(TimeLimit, time_duration=int(selectedDuration))
 
-        # Get topics under the selected subject
+        # Get all topics related to the selected subject
         topics = Topic.objects.filter(subject=subject)
 
-        # Determine the number of questions to fetch based on duration
-        duration_map = {1: 5, 2: 50, 3: 100}
-        question_count = duration_map.get(duration.time_duration, 5)
+        # Map duration to a predefined number of questions, defaulting to 25 if not found
+        duration_map = {1: 25, 2: 50, 3: 100}
+        question_count = duration_map.get(duration.time_duration, 25)
+
+        # Split question count for scenario and non-scenario
+        scenario_count = question_count // 2
+        non_scenario_count = question_count - scenario_count
+
+        # Calculate difficulty level distribution for scenario based questions
+        scenario_easy_count = int(scenario_count * 0.3)
+        scenario_moderate_count = int(scenario_count * 0.4)
+        scenario_difficult_count = scenario_count - scenario_easy_count - scenario_moderate_count
+
+        # Calculate difficulty level distribution for non-scenario based questions
+        non_scenario_easy_count = int(non_scenario_count * 0.3)
+        non_scenario_moderate_count = int(non_scenario_count * 0.4)
+        non_scenario_difficult_count = non_scenario_count - non_scenario_easy_count - non_scenario_moderate_count
 
         # Fetch scenario-based questions
-        scenario_questions = list(Question.objects.filter(
-            topic__in=topics
-        ).exclude(scenario__isnull=True).order_by("scenario"))
+        scenario_easy_questions = list(Question.objects.filter(topic__in=topics, level_of_difficulty=1).exclude(scenario__isnull=True).order_by("?")[:scenario_easy_count])
+        scenario_moderate_questions = list(Question.objects.filter(topic__in=topics, level_of_difficulty=2).exclude(scenario__isnull=True).order_by("?")[:scenario_moderate_count])
+        scenario_difficult_questions = list(Question.objects.filter(topic__in=topics, level_of_difficulty=3).exclude(scenario__isnull=True).order_by("?")[:scenario_difficult_count])
 
-        grouped_questions = []
-        seen_scenarios = set()
-        scenario_question_count = 0
+        scenario_questions = scenario_easy_questions + scenario_moderate_questions + scenario_difficult_questions
+        random.shuffle(scenario_questions)
 
-        for question in scenario_questions:
-            if question.scenario not in seen_scenarios:
-                grouped_questions.append({
-                    "scenario": question.scenario,
-                    "questions": []
-                })
-                seen_scenarios.add(question.scenario)
+        # Fetch non-scenario-based questions
+        non_scenario_easy_questions = list(Question.objects.filter(topic__in=topics, level_of_difficulty=1, scenario__isnull=True).order_by("?")[:non_scenario_easy_count])
+        non_scenario_moderate_questions = list(Question.objects.filter(topic__in=topics, level_of_difficulty=2, scenario__isnull=True).order_by("?")[:non_scenario_moderate_count])
+        non_scenario_difficult_questions = list(Question.objects.filter(topic__in=topics, level_of_difficulty=3, scenario__isnull=True).order_by("?")[:non_scenario_difficult_count])
 
-            # Add question to its scenario group
-            for group in grouped_questions:
-                if group["scenario"] == question.scenario:
-                    if scenario_question_count < question_count:
-                        group["questions"].append(question)
-                        scenario_question_count += 1
-
-        # Shuffle scenario questions
-        for group in grouped_questions:
-            random.shuffle(group["questions"])
-
-        # Fetch non-scenario questions
-        remaining_slots = question_count - scenario_question_count
-        non_scenario_questions = list(Question.objects.filter(
-            topic__in=topics,
-            scenario__isnull=True
-        ).order_by("?")[:remaining_slots])
-
+        non_scenario_questions = non_scenario_easy_questions + non_scenario_moderate_questions + non_scenario_difficult_questions
         random.shuffle(non_scenario_questions)
 
-        # Merge scenario and non-scenario questions
-        final_questions = grouped_questions
+        # Group scenario questions by scenario
+        scenario_groups = {}
+        for question in scenario_questions:
+            if question.scenario:
+                if question.scenario not in scenario_groups:
+                    scenario_groups[question.scenario] = []
+                 # Add the question to the corresponding scenario group
+                scenario_groups[question.scenario].append(question)
+
+        # Create a structured list where each entry contains a scenario and its associated questions
+        final_questions = []
+        for scenario, questions in scenario_groups.items():
+            final_questions.append({"scenario": scenario, "questions": questions})
+
+        # If there are questions that don't belong to any scenario, add them as a separate group
         if non_scenario_questions:
             final_questions.append({"scenario": None, "questions": non_scenario_questions})
 
-        # Create and save the GeneratedQuiz instance
-        generated_quiz = GeneratedQuiz.objects.create(
-            user=request.user,
-            subject=subject,
-            duration=duration 
-        )
+        # Create a new GeneratedQuiz instance for the user with the specified subject and duration
+        generated_quiz = GeneratedQuiz.objects.create(user=request.user, subject=subject, duration=duration)
 
-        # Assign questions to the quiz
-        all_questions = [q for group in final_questions for q in group["questions"]]
-        generated_quiz.questions.set(all_questions)
+        # Flatten the grouped questions into a single list to associate them with the generated quiz
+        all_questions_list = []
+        for group in final_questions:
+            all_questions_list.extend(group["questions"])
+        
+        # Assign all selected questions to the generated quiz
+        generated_quiz.questions.set(all_questions_list)
 
-        # Assign scenarios if any
-        scenarios = {q.scenario for q in all_questions if q.scenario}
-        if scenarios:
-            generated_quiz.scenario.set(scenarios)
-
-
-         # ** Add a sequential numbering field **
+        # Initialize question numbering
         question_number = 1
         for group in final_questions:
             for question in group["questions"]:
-                question.number = question_number  # Attach the number to each question object
-                
-                # Shuffle answer choices
-                options = [
-                    ("A", question.option_a),
-                    ("B", question.option_b),
-                    ("C", question.option_c),
-                    ("D", question.option_d),
-                ]
+                # Assign a sequential number to each question
+                question.number = question_number
+
+                # Shuffle answer choices randomly
+                options = [("A", question.option_a), ("B", question.option_b), ("C", question.option_c), ("D", question.option_d)]
                 random.shuffle(options)
 
-                # Map shuffled options back
+                # Assign the shuffled options back to the question
                 question.option_a = options[0][1]
                 question.option_b = options[1][1]
                 question.option_c = options[2][1]
                 question.option_d = options[3][1]
 
-                # Store the correct answer after shuffling
-                correct_letter = question.correct_option  # Assume correct_answer stores "A", "B", "C", or "D"
+                # Adjust the correct option letter to match the new shuffled choices
+                correct_letter = question.correct_option
                 for new_letter, option_value in options:
                     if correct_letter == "A" and option_value == question.option_a:
                         question.correct_option = new_letter
@@ -229,20 +229,13 @@ def generate_questions(request):
                     elif correct_letter == "D" and option_value == question.option_d:
                         question.correct_option = new_letter
 
-                question_number += 1  # Increment
+                # Increment question number for the next question
+                question_number += 1
 
-        # Render the template with grouped questions
-        context = {
-            "final_questions": final_questions,
-            "generated_quiz_id": generated_quiz.id,
-            "subject": subject.name,
-            "duration":duration.time_duration,
-        }
+        context = {"final_questions": final_questions, "generated_quiz_id": generated_quiz.id, "subject": subject.name, "duration": duration.time_duration}
         return render(request, "partials/generated_questions.html", context)
 
     return HttpResponseBadRequest("Invalid request")
-
-
 
 
 
