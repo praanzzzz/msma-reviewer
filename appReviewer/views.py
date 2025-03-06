@@ -110,7 +110,6 @@ def fetch_subjects(request, course_id):
 
 '''
     DATA STRUCT AND ALGO TASKS:
-        number of questions do not work
         add timer
         randomize the scenario based questions and non scenario based question
         shuffle the options
@@ -197,7 +196,7 @@ def generate_questions(request):
         if scenarios:
             generated_quiz.scenario.set(scenarios)
 
-            
+
          # ** Add a sequential numbering field **
         question_number = 1
         for group in final_questions:
