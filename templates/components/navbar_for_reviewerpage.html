@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .floating-navbar {
+            position: fixed;
+            top: 30px;
+            left: 0;
+            right: 0;
+            margin: 0 5%;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 10px 20px;
+            z-index: 1000;
+        }
+
+        /* Sidebar styles (hidden by default) */
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            padding-top: 60px;
+            transition: 0.3s ease-in-out;
+            z-index: 1050;
+        }
+
+        .mobile-sidebar.open {
+            left: 0;
+        }
+
+        .mobile-sidebar a {
+            display: block;
+            padding: 15px 20px;
+            font-size: 18px;
+            color: black;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+
+        .mobile-sidebar a:hover {
+            background: #f1f1f1;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 991px) { /* Sidebar for mobile */
+            .desktop-menu {
+                display: none !important;
+            }
+        }
+
+        @media (min-width: 992px) { /* Hide hamburger on large screens */
+            .navbar-toggler {
+                display: none !important;
+            }
+        }
+
+
+        /* for the extension of list of gen quizes in sidebar */
+        .mobile-sidebar span {
+            display: block;
+            padding: 15px 20px;
+            font-size: 18px;
+            color: black;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .mobile-sidebar span:hover {
+            background: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-expand-lg floating-navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">TakeUp</a>
+
+            <!-- Desktop menu -->
+            <div class="desktop-menu">
+                <ul class="navbar-nav ms-auto d-flex flex-row">
+                    <li class="nav-item px-2"><a class="nav-link" href="{% url 'dashboard' %}">Home</a></li>
+                    <li class="nav-item px-2"><a class="nav-link" href="{% url 'reviewer' %}">Reviewers</a></li>
+                    <li class="nav-item px-2"><a class="nav-link" href="{% url 'profile' %}">Profile</a></li>
+                    <li class="nav-item px-2"><a class="nav-link" href="{% url 'my_logout' %}">Logout</a></li>
+                </ul>
+            </div>
+
+            <!-- Toggler for mobile -->
+            <button class="navbar-toggler ms-auto" type="button" onclick="openSidebar()">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Sidebar (Mobile) -->
+    <div id="mobileSidebar" class="mobile-sidebar">
+        <span class="close-btn" onclick="closeSidebar()">×</span>
+        <a href="{% url 'dashboard' %}">Home</a>
+        <a href="{% url 'reviewer' %}">Reviewers</a>
+        <a href="{% url 'profile' %}">Profile</a>
+        <a href="{% url 'my_logout' %}">Logout</a>
+        <span class="h4">Quizzes</span>
+        {% for quiz in generated_quiz %}
+        <!-- <li class="list-group-item">
+            <a href="#" hx-get="{% url 'fetchquizresult' quiz.id %}" hx-target="#quizresultcontainer"
+                hx-swap="innerHTML" hx-trigger="click" class="text-decoration-none d-block">
+                {{ quiz }}
+            </a>
+            <span class="badge {% if quiz.is_finished %}bg-success{% else %}bg-warning{% endif %}">
+                {% if quiz.is_finished %}
+                Completed
+                {% else %}
+                Unfinished
+                {% endif %}
+            </span>
+        </li> -->
+        <li class="list-group-item d-flex justify-content-between align-items-center px-4">
+            <a href="#" hx-get="{% url 'fetchquizresult' quiz.id %}" 
+               hx-target="#quizresultcontainer" 
+               hx-swap="innerHTML" 
+               hx-trigger="click" 
+               class="text-decoration-none">
+                {{ quiz }}
+            </a>
+            <span class="badge {% if quiz.is_finished %}bg-success{% else %}bg-warning{% endif %} text-xs">
+                {% if quiz.is_finished %}
+                Completed
+                {% else %}
+                Unfinished
+                {% endif %}
+            </span>
+        </li>
+        
+        {% empty %}
+        <li class="list-group-item text-muted"><span>No questions generated yet</span></li>
+        {% endfor %}
+
+    </div>
+
+    <script>
+        function openSidebar() {
+            document.getElementById("mobileSidebar").classList.add("open");
+        }
+
+        function closeSidebar() {
+            document.getElementById("mobileSidebar").classList.remove("open");
+        }
+    </script>
+
+</body>
+</html>

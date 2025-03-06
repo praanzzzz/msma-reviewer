@@ -148,7 +148,9 @@ class GeneratedQuiz(models.Model):
         ordering = ['-created_at'] 
 
     def __str__(self):
-        return f"Quiz {self.id} by {self.user.email} - {self.subject.name} "
+        return f"Quiz {self.id}"
+        # return f"Quiz {self.id} by {self.user.email} - {self.subject.name} "
+        
 
 
 
