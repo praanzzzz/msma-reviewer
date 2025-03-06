@@ -109,11 +109,15 @@ def fetch_subjects(request, course_id):
 
 
 '''
-    number of questions do not work
-    add timer
-    randomize the scenario based questions and non scenario based question
-    shuffle the options
-    30% 40% 30% difficulty
+    DATA STRUCT AND ALGO TASKS:
+        number of questions do not work
+        add timer
+        randomize the scenario based questions and non scenario based question
+        shuffle the options
+        30% 40% 30% difficulty
+    FEATURE RELATED TASKS:
+        view feedback
+        continue unfinished quiz
 '''
 
 @login_required
