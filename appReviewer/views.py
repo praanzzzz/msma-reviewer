@@ -112,7 +112,6 @@ def fetch_subjects(request, course_id):
     DATA STRUCT AND ALGO TASKS:
         add timer
         randomize the scenario based questions and non scenario based question
-        shuffle the options
         30% 40% 30% difficulty
     FEATURE RELATED TASKS:
         view feedback
@@ -135,8 +134,8 @@ def generate_questions(request):
         topics = Topic.objects.filter(subject=subject)
 
         # Determine the number of questions to fetch based on duration
-        duration_map = {1: 25, 2: 50, 3: 100}
-        question_count = duration_map.get(duration.time_duration, 25)
+        duration_map = {1: 5, 2: 50, 3: 100}
+        question_count = duration_map.get(duration.time_duration, 5)
 
         # Fetch scenario-based questions
         scenario_questions = list(Question.objects.filter(
@@ -202,6 +201,34 @@ def generate_questions(request):
         for group in final_questions:
             for question in group["questions"]:
                 question.number = question_number  # Attach the number to each question object
+                
+                # Shuffle answer choices
+                options = [
+                    ("A", question.option_a),
+                    ("B", question.option_b),
+                    ("C", question.option_c),
+                    ("D", question.option_d),
+                ]
+                random.shuffle(options)
+
+                # Map shuffled options back
+                question.option_a = options[0][1]
+                question.option_b = options[1][1]
+                question.option_c = options[2][1]
+                question.option_d = options[3][1]
+
+                # Store the correct answer after shuffling
+                correct_letter = question.correct_option  # Assume correct_answer stores "A", "B", "C", or "D"
+                for new_letter, option_value in options:
+                    if correct_letter == "A" and option_value == question.option_a:
+                        question.correct_option = new_letter
+                    elif correct_letter == "B" and option_value == question.option_b:
+                        question.correct_option = new_letter
+                    elif correct_letter == "C" and option_value == question.option_c:
+                        question.correct_option = new_letter
+                    elif correct_letter == "D" and option_value == question.option_d:
+                        question.correct_option = new_letter
+
                 question_number += 1  # Increment
 
         # Render the template with grouped questions
