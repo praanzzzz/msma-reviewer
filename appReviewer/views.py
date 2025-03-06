@@ -197,6 +197,14 @@ def generate_questions(request):
         if scenarios:
             generated_quiz.scenario.set(scenarios)
 
+            
+         # ** Add a sequential numbering field **
+        question_number = 1
+        for group in final_questions:
+            for question in group["questions"]:
+                question.number = question_number  # Attach the number to each question object
+                question_number += 1  # Increment
+
         # Render the template with grouped questions
         context = {
             "final_questions": final_questions,
