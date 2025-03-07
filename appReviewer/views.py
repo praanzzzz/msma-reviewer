@@ -146,13 +146,13 @@ def generate_questions(request):
         non_scenario_count = question_count - scenario_count
 
         # Calculate difficulty level distribution for scenario based questions
-        scenario_easy_count = int(scenario_count * 0.3)
-        scenario_moderate_count = int(scenario_count * 0.4)
+        scenario_easy_count = round(scenario_count * 0.3)
+        scenario_moderate_count = round(scenario_count * 0.4)
         scenario_difficult_count = scenario_count - scenario_easy_count - scenario_moderate_count
 
         # Calculate difficulty level distribution for non-scenario based questions
-        non_scenario_easy_count = int(non_scenario_count * 0.3)
-        non_scenario_moderate_count = int(non_scenario_count * 0.4)
+        non_scenario_easy_count = round(non_scenario_count * 0.3)
+        non_scenario_moderate_count = round(non_scenario_count * 0.4)
         non_scenario_difficult_count = non_scenario_count - non_scenario_easy_count - non_scenario_moderate_count
 
         # Fetch scenario-based questions
