@@ -1,0 +1,36 @@
+<br><br>
+
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
+{% else %} 
+    <a href="{% url 'reviewer' %}"><button class="btn btn-success">Go Back</button></a><br>
+    <h3>Feedback for Quiz: {{ summary.generated_quiz.id }}</h3>
+    <h5>Subject: {{summary.generated_quiz.subject}}</h5>
+    <p>Score: {{ summary.score }} / {{ summary.num_items }}</p>
+
+    {% for item in feedback_data %}
+        <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
+            <p><strong>{{ item.question.question_text }}</strong></p>
+
+            {% for letter, option in item.options.items %}
+                {% if item.user_answer == letter and not item.is_correct %}
+                    <p style="color: red;">{{ letter }}. {{ option }} (Your Answer)</p>
+                {% elif item.correct_answer == letter %}
+                    <p style="color: green;">{{ letter }}. {{ option }} (Correct Answer)</p>
+                {% elif item.user_answer == letter %}
+                    <p>{{ letter }}. {{ option }} (Your Answer)</p>
+                {% else %}
+                    <p>{{ letter }}. {{ option }}</p>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endfor %}
+{% endif %} 
+
+
+
+
+
+
+
+<br><br>

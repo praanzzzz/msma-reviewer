@@ -1,9 +1,7 @@
 
 
 
-
-
-<div id="quizResultContainer" class="card shadow-sm border-0">
+<div id="quizResultContainer" class="card shadow-sm border-0 pt-4 mt-4">
     <div class="card-header bg-primary text-white text-center">
         <h5 class="mb-0">Quiz Result: {{ quiz }}</h5>
     </div>
@@ -21,10 +19,13 @@
             {% else %}
                 <p class="text-danger fw-bold">❌ Don't give up! Try again.</p>
             {% endif %}
-
-            <button class="btn btn-primary mt-3">View Feedback</button>
+            
+            <button class = "btn btn-success" hx-get="{% url 'view_feedback' %}?summary_id={{ summary_id }}" hx-target="#takeexam" hx-swap="outerHTML">View Feedback</button>
         {% else %}
-            <p class="text-muted">Unfinished
+            <p class="text-muted">Unfinished</p>
+            <button class="btn btn-primary" >Continue Exam</button>
         {% endif %}
     </div>
 </div>
+
+

@@ -123,6 +123,9 @@ def fetch_subjects(request, course_id):
 
 @login_required
 def generate_questions(request):
+    if not request.user.is_subscribed:
+        return render(request, "error_pages/not_subscribed.html")
+    
     if request.method == "POST" and request.headers.get("HX-Request"):
         # Retrieve selected course, subject, and exam duration from the POST request
         selectedCourse = request.POST.get("selected_course")
@@ -138,8 +141,8 @@ def generate_questions(request):
         topics = Topic.objects.filter(subject=subject)
 
         # Map duration to a predefined number of questions, defaulting to 25 if not found
-        duration_map = {1: 25, 2: 50, 3: 100}
-        question_count = duration_map.get(duration.time_duration, 25)
+        duration_map = {1: 1, 2: 50, 3: 100}
+        question_count = duration_map.get(duration.time_duration, 1)
 
         # Split question count for scenario and non-scenario
         scenario_count = question_count // 2
@@ -177,7 +180,7 @@ def generate_questions(request):
             if question.scenario:
                 if question.scenario not in scenario_groups:
                     scenario_groups[question.scenario] = []
-                 # Add the question to the corresponding scenario group
+                # Add the question to the corresponding scenario group
                 scenario_groups[question.scenario].append(question)
 
         # Create a structured list where each entry contains a scenario and its associated questions
@@ -234,14 +237,18 @@ def generate_questions(request):
 
         context = {"final_questions": final_questions, "generated_quiz_id": generated_quiz.id, "subject": subject.name, "duration": duration.time_duration}
         return render(request, "partials/generated_questions.html", context)
-
     return HttpResponseBadRequest("Invalid request")
+
+
 
 
 
 
 @login_required
 def submit_quiz(request):
+    if not request.user.is_subscribed:
+        return render(request, "error_pages/not_subscribed.html")
+    
     if request.method == "POST" and request.headers.get("HX-Request"):
         try:
             # Retrieve and validate generated_quiz_id
@@ -296,33 +303,89 @@ def submit_quiz(request):
             context = {
                 "score": score, 
                 "num_items": len(questions),
+                "summary_id": summary.id,
                 }
             return render(request, "partials/quiz_result.html", context)
         except Exception as e:
             return HttpResponseBadRequest(f"Error processing quiz submission: {str(e)}")
 
+        
 
 
-# used in sidebar to dynamically show quiz result
+
+
+
+
+
+
+
+@login_required
+def view_feedback(request):
+    """
+    Displays the feedback for a user's submitted quiz, highlighting incorrect answers.
+    """
+    if request.method == "GET" and request.headers.get("HX-Request"):
+        summary_id = request.GET.get("summary_id")
+
+        if not summary_id or not summary_id.isdigit():
+            return render(request, "partials/view_feedback.html", {"error": "Invalid Summary ID"})
+
+        summary = get_object_or_404(Summary, id=int(summary_id), user=request.user)
+        generated_quiz = summary.generated_quiz
+        questions = generated_quiz.questions.all()
+
+        user_answers = json.loads(summary.user_answers)  # Load user's answers from JSON
+
+        feedback_data = []
+        for question in questions:
+            question_data = {
+                "question": question,
+                "user_answer": user_answers.get(str(question.id)),
+                "correct_answer": question.correct_option,
+                "options": {
+                    "A": question.option_a,
+                    "B": question.option_b,
+                    "C": question.option_c,
+                    "D": question.option_d,
+                },
+                "is_correct": user_answers.get(str(question.id)) == question.correct_option,
+            }
+            feedback_data.append(question_data)
+
+        context = {
+            "feedback_data": feedback_data,
+            "summary": summary,
+        }
+        return render(request, "partials/view_feedback.html", context)
+    return render(request, "partials/view_feedback.html",{"error":"Invalid Request"})
+
+
+
+
+
+
+
 @login_required
 def fetchquizresult(request, quiz_id):
     quiz = get_object_or_404(GeneratedQuiz, id=quiz_id)
-    summaries = Summary.objects.filter(generated_quiz=quiz)  # Get all summaries for debugging
+    summaries = Summary.objects.filter(generated_quiz=quiz)
     if summaries.exists():
         summary = summaries.first()
+        summary_id = summary.id
     else:
         summary = None
+        summary_id = None #add this line
     # Compute percentage safely
     percentage = 0
     if summary and summary.num_items > 0:
         percentage = (summary.score / summary.num_items) * 100
     context = {
-       "quiz": quiz,
-       "summary": summary,
-       "percentage": percentage,
+        "quiz": quiz,
+        "summary": summary,
+        "percentage": percentage,
+        "summary_id": summary_id,
     }
     return render(request, "partials/fetchquizresult.html", context)
-
 
 
 

@@ -20,14 +20,16 @@
                     <a href="#" hx-get="{% url 'fetchquizresult' quiz.id %}" hx-target="#quizresultcontainer"
                         hx-swap="innerHTML" hx-trigger="click" class="text-decoration-none d-block">
                         {{ quiz }}
+
+                        <span class="badge {% if quiz.is_finished %}bg-success{% else %}bg-warning{% endif %}">
+                            {% if quiz.is_finished %}
+                            Completed
+                            {% else %}
+                            Unfinished
+                            {% endif %}
+                        </span>
                     </a>
-                    <span class="badge {% if quiz.is_finished %}bg-success{% else %}bg-warning{% endif %}">
-                        {% if quiz.is_finished %}
-                        Completed
-                        {% else %}
-                        Unfinished
-                        {% endif %}
-                    </span>
+                    
                 </li>
                 {% empty %}
                 <li class="list-group-item text-muted">No questions generated yet.</li>
@@ -39,9 +41,9 @@
 
 
 
-        <!-- Main Content -->
+        <!-- Generate Question -->
         <main class="col-md-9 d-flex align-items-center vh-100">
-            <div id="quizresultcontainer" class="p-4 shadow-sm rounded bg-white">
+            <div id="quizresultcontainer" class="p-4 m-4 shadow-sm rounded bg-white">
                 <form hx-post="{% url 'generate_questions' %}" hx-target="#takeexam" hx-swap="outerHTML">
                     {% csrf_token %}
 
