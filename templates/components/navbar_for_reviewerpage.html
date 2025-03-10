@@ -95,7 +95,7 @@
             <a class="navbar-brand" href="{% url 'dashboard' %}">TakeUp</a>
 
             <!-- Desktop menu -->
-            <div class="desktop-menu">
+            <div class="desktop-menu" hx-boost="true">
                 <ul class="navbar-nav ms-auto d-flex flex-row">
                     <li class="nav-item px-2"><a class="nav-link" href="{% url 'dashboard' %}">Home</a></li>
                     <li class="nav-item px-2"><a class="nav-link" href="{% url 'reviewer' %}">Reviewers</a></li>
@@ -112,7 +112,7 @@
     </nav>
 
     <!-- Sidebar (Mobile) -->
-    <div id="mobileSidebar" class="mobile-sidebar">
+    <div id="mobileSidebar" class="mobile-sidebar" hx-boost="true">
         <span class="close-btn" onclick="closeSidebar()">×</span>
         <a href="{% url 'dashboard' %}">Home</a>
         <a href="{% url 'reviewer' %}">Reviewers</a>

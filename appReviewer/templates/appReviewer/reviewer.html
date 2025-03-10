@@ -52,13 +52,13 @@
                             {% for course in courses %}
                             <button type="button" class="btn btn-outline-primary course-btn"
                                 data-value="{{ course.id }}" hx-get="{% url 'fetch_subjects' course.id %}"
-                                hx-push-url="true" hx-target="#subjectsContainer" hx-swap="innerHTML" hx-trigger="click">
+                                hx-push-url="false" hx-target="#subjectsContainer" hx-swap="innerHTML" hx-trigger="click">
                                 {{ course.name }}
                             </button>
                             {% endfor %}
                         </div>
                         <input type="hidden" name="selected_course" id="selectedCourse" required>
-                    </div>
+                    </div> 
 
                     <!-- Subject Selection -->
                     <div class="mb-3">

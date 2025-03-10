@@ -145,8 +145,8 @@ def generate_questions(request):
         topics = Topic.objects.filter(subject=subject)
 
         # Map duration to a predefined number of questions, defaulting to 25 if not found
-        duration_map = {1: 5, 2: 50, 3: 100}
-        question_count = duration_map.get(duration.time_duration, 5)
+        duration_map = {1: 2, 2: 50, 3: 100}
+        question_count = duration_map.get(duration.time_duration, 2)
 
         # Split question count for scenario and non-scenario
         scenario_count = question_count // 2
