@@ -3,7 +3,6 @@
 {% if error %}
     <p style="color:red;">{{ error }}</p>
 {% else %} 
-    <a href="{% url 'reviewer' %}"><button class="btn btn-success">Go Back</button></a><br>
     <h3>Feedback for Quiz: {{ summary.generated_quiz.id }}</h3>
     <h5>Subject: {{summary.generated_quiz.subject}}</h5>
     <p>Score: {{ summary.score }} / {{ summary.num_items }}</p>
