@@ -121,6 +121,9 @@ def fetch_subjects(request, course_id):
 '''
 
 
+
+
+
 @login_required
 def generate_questions(request):
     if not request.user.is_subscribed:
