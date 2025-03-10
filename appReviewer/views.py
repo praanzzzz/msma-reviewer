@@ -13,6 +13,7 @@ signer = Signer()
 import json
 
 
+
 #                fadgMSMA@2025
 
 # Create your views here.
@@ -144,8 +145,8 @@ def generate_questions(request):
         topics = Topic.objects.filter(subject=subject)
 
         # Map duration to a predefined number of questions, defaulting to 25 if not found
-        duration_map = {1: 1, 2: 50, 3: 100}
-        question_count = duration_map.get(duration.time_duration, 1)
+        duration_map = {1: 5, 2: 50, 3: 100}
+        question_count = duration_map.get(duration.time_duration, 5)
 
         # Split question count for scenario and non-scenario
         scenario_count = question_count // 2
@@ -237,10 +238,14 @@ def generate_questions(request):
 
                 # Increment question number for the next question
                 question_number += 1
-
-        context = {"final_questions": final_questions, "generated_quiz_id": generated_quiz.id, "subject": subject.name, "duration": duration.time_duration}
+        context = {
+            "final_questions": final_questions,
+            "generated_quiz_id": generated_quiz.id,
+            "subject": subject.name,
+            "duration": duration.time_duration}
         return render(request, "partials/generated_questions.html", context)
-    return HttpResponseBadRequest("Invalid request")
+    return redirect("reviewer")
+
 
 
 
@@ -311,12 +316,9 @@ def submit_quiz(request):
             return render(request, "partials/quiz_result.html", context)
         except Exception as e:
             return HttpResponseBadRequest(f"Error processing quiz submission: {str(e)}")
+    return redirect("reviewer")
 
         
-
-
-
-
 
 
 
@@ -327,40 +329,47 @@ def view_feedback(request):
     """
     Displays the feedback for a user's submitted quiz, highlighting incorrect answers.
     """
-    if request.method == "GET" and request.headers.get("HX-Request"):
-        summary_id = request.GET.get("summary_id")
+    # if request.method == "GET" and request.headers.get("HX-Request"):
+    summary_id = request.GET.get("summary_id")
 
-        if not summary_id or not summary_id.isdigit():
-            return render(request, "partials/view_feedback.html", {"error": "Invalid Summary ID"})
+    if not summary_id or not summary_id.isdigit():
+        return render(request, "partials/view_feedback.html", {"error": "Invalid Summary ID"})
 
-        summary = get_object_or_404(Summary, id=int(summary_id), user=request.user)
-        generated_quiz = summary.generated_quiz
-        questions = generated_quiz.questions.all()
+    summary = get_object_or_404(Summary, id=int(summary_id), user=request.user)
+    generated_quiz = summary.generated_quiz
+    questions = generated_quiz.questions.all()
 
-        user_answers = json.loads(summary.user_answers)  # Load user's answers from JSON
+    user_answers = json.loads(summary.user_answers)  # Load user's answers from JSON
 
-        feedback_data = []
-        for question in questions:
-            question_data = {
-                "question": question,
-                "user_answer": user_answers.get(str(question.id)),
-                "correct_answer": question.correct_option,
-                "options": {
-                    "A": question.option_a,
-                    "B": question.option_b,
-                    "C": question.option_c,
-                    "D": question.option_d,
-                },
-                "is_correct": user_answers.get(str(question.id)) == question.correct_option,
-            }
-            feedback_data.append(question_data)
-
-        context = {
-            "feedback_data": feedback_data,
-            "summary": summary,
+    feedback_data = []
+    for question in questions:
+        question_data = {
+            "question": question,
+            "user_answer": user_answers.get(str(question.id)),
+            "correct_answer": question.correct_option,
+            "options": {
+                "A": question.option_a,
+                "B": question.option_b,
+                "C": question.option_c,
+                "D": question.option_d,
+            },
+            "is_correct": user_answers.get(str(question.id)) == question.correct_option,
         }
+        feedback_data.append(question_data)
+
+    context = {
+        "feedback_data": feedback_data,
+        "summary": summary,
+    }
+
+    # Serve partial for HTMX requests
+    if request.headers.get("HX-Request"):
         return render(request, "partials/view_feedback.html", context)
-    return render(request, "partials/view_feedback.html",{"error":"Invalid Request"})
+
+    # Serve full page template for direct URL access or page refresh
+    return redirect("reviewer")
+      
+       
 
 
 
@@ -382,13 +391,17 @@ def fetchquizresult(request, quiz_id):
     percentage = 0
     if summary and summary.num_items > 0:
         percentage = (summary.score / summary.num_items) * 100
+
     context = {
         "quiz": quiz,
         "summary": summary,
         "percentage": percentage,
         "summary_id": summary_id,
     }
-    return render(request, "partials/fetchquizresult.html", context)
+    if request.headers.get("HX-Request"):
+        return render(request, "partials/fetchquizresult.html", context)
+    return redirect('reviewer')
+
 
 
 

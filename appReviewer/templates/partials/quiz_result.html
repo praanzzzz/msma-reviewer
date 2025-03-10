@@ -12,6 +12,6 @@
                 Score: {{ score }} / {{ num_items }} 
             </h4>
             <a href="{% url 'reviewer' %}" class="btn btn-success">View Another Quiz</a>
-            <button class="btn btn-primary" hx-get="{% url 'view_feedback' %}?summary_id={{ summary_id }}" hx-target="#feedback-container" hx-swap="outerHTML">View Feedback</button>
+            <button class="btn btn-primary" hx-get="{% url 'view_feedback' %}?summary_id={{ summary_id }}" hx-push-url="true" hx-target="#feedback-container" hx-swap="outerHTML">View Feedback</button>
     </div>
 </div>

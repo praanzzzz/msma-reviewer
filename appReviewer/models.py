@@ -144,6 +144,10 @@ class GeneratedQuiz(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_finished = models.BooleanField(default = False)
 
+    # def delete(self, *args, **kwargs):
+    #     self.is_deleted = True
+    #     self.save()
+
     class Meta:
         ordering = ['-created_at'] 
 

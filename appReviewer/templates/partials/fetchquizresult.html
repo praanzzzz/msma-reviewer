@@ -20,7 +20,7 @@
                 <p class="text-danger fw-bold">❌ Don't give up! Try again.</p>
             {% endif %}
             
-            <button class = "btn btn-success" hx-get="{% url 'view_feedback' %}?summary_id={{ summary_id }}" hx-target="#takeexam" hx-swap="outerHTML">View Feedback</button>
+            <button class = "btn btn-success" hx-get="{% url 'view_feedback' %}?summary_id={{ summary_id }}" hx-push-url ="true" hx-target="#takeexam" hx-swap="outerHTML">View Feedback</button>
         {% else %}
             <p class="text-muted">Unfinished</p>
             <button class="btn btn-primary" >Continue Exam</button>

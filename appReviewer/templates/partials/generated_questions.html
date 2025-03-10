@@ -1,13 +1,13 @@
 
 <br><br><br><br><br><br>
 
-
+<a href="{% url 'reviewer' %}"><button class="btn btn-primary my-4">Go Back</button></a>
 <form method="POST" 
     hx-post="{% url 'submit_quiz' %}"
     hx-swap="outerHTML" 
     hx-vals='{"generated_quiz_id": "{{ generated_quiz_id }}"}'>
 
-    <a href="{% url 'reviewer' %}"><button class="btn btn-primary my-4">Go Back</button></a>
+
     <h5>{{ subject }}</h5>
     <p>Exam Duration: {{ duration }} hrs</p>
 
