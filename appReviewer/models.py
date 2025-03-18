@@ -136,6 +136,7 @@ class TimeLimit(models.Model):
 
 class GeneratedQuiz(models.Model):
     # id as identifier
+    title = models.CharField(max_length=20, default="testtitle")
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     duration = models.ForeignKey(TimeLimit, on_delete = models.CASCADE, null=True)
@@ -152,7 +153,7 @@ class GeneratedQuiz(models.Model):
         ordering = ['-created_at'] 
 
     def __str__(self):
-        return f"Quiz {self.id}"
+        return f"{self.title}"
         # return f"Quiz {self.id} by {self.user.email} - {self.subject.name} "
         
 

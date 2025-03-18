@@ -3,15 +3,6 @@
 
 
 
-
-{% block navbar %}
-{% include 'components/navbar_for_reviewerpage.html' %}
-{% endblock %}
-
-
-
-
-
 {% block extra_css %}
 <style>
     .list-view .quiz-item {
@@ -33,11 +24,6 @@
     .btn i {
         font-size: 1.2rem;
     }
-
-
-
-
-
 
     .quiz-nav {
         display: flex;
@@ -65,7 +51,6 @@
         width: 0;
         height: 3px;
         background-color: #007bff;
-        /* Bootstrap primary color */
         transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
     }
 
@@ -82,36 +67,28 @@
 </style>
 {% endblock %}
 
-
-
-
-
-
 {% block content %}
-<br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br>
 <div class="container py-4">
     <div class="quiz-nav">
-        <div id="viewQuiz" onclick="navigateTo('{% url 'show_user_exams' %}')"  class="active">View All Quiz</div>
+        <div id="viewQuiz" onclick="navigateTo('{% url 'show_user_exams' %}')" class="active">View All Quiz</div>
         <div id="generateExam" onclick="navigateTo('{% url 'reviewer' %}')">Generate Exam</div>
     </div>
-
-
-    <h4 class="mb-3">Your Exams</h4>
 
     <div class="d-flex justify-content-between mb-3">
         <div></div>
         <div>
-            <button id="listViewBtn" class="btn btn-outline-primary active">
+            <button id="listViewBtn" class="btn btn-outline-primary">
                 <i class="bi bi-list"></i>
             </button>
-            <button id="gridViewBtn" class="btn btn-outline-primary">
+            <button id="gridViewBtn" class="btn btn-outline-primary active">
                 <i class="bi bi-grid"></i>
             </button>
-
         </div>
     </div>
 
-    <div id="quizContainer" class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3 list-view">
+    <!-- Set default view as grid (Removed list-view class) -->
+    <div id="quizContainer" class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
         {% for quiz in generated_quiz %}
         <div class="col quiz-item">
             <div class="card h-100 shadow-sm p-3 rounded">
@@ -131,17 +108,25 @@
     </div>
 </div>
 
-
-
-
 <script>
+    function navigateTo(url) {
+        window.location.href = url;
+    }
+
+    // Ensure Grid View is default on page load
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("quizContainer").classList.remove("list-view");
+        document.getElementById("quizContainer").classList.add("row-cols-md-2", "row-cols-lg-4");
+        document.getElementById("gridViewBtn").classList.add("active");
+        document.getElementById("listViewBtn").classList.remove("active");
+    });
+
+    // Toggle between list and grid view
     document.getElementById("listViewBtn").addEventListener("click", function () {
         document.getElementById("quizContainer").classList.remove("row-cols-md-2", "row-cols-lg-4");
         document.getElementById("quizContainer").classList.add("list-view");
         document.getElementById("listViewBtn").classList.add("active");
         document.getElementById("gridViewBtn").classList.remove("active");
-        document.getElementById("listViewBtn").innerHTML = '<i class="bi bi-list"></i>';
-        document.getElementById("gridViewBtn").innerHTML = '<i class="bi bi-grid"></i>';
     });
 
     document.getElementById("gridViewBtn").addEventListener("click", function () {
@@ -149,15 +134,8 @@
         document.getElementById("quizContainer").classList.add("row-cols-md-2", "row-cols-lg-4");
         document.getElementById("gridViewBtn").classList.add("active");
         document.getElementById("listViewBtn").classList.remove("active");
-        document.getElementById("gridViewBtn").innerHTML = '<i class="bi bi-grid"></i>';
-        document.getElementById("listViewBtn").innerHTML = '<i class="bi bi-list"></i>';
     });
-</script>
 
-<script>
-    function navigateTo(url) {
-        window.location.href = url;
-    }
     // Highlight the active tab when selected
     document.querySelectorAll('.quiz-nav div').forEach(item => {
         item.addEventListener('click', function () {

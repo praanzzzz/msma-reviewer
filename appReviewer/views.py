@@ -11,6 +11,8 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 signer = Signer()
 import json
+import random
+import string
 
 
 
@@ -135,8 +137,6 @@ def fetch_subjects(request, course_id):
 
 
 
-
-
 @login_required
 def generate_questions(request):
     if not request.user.is_subscribed:
@@ -152,6 +152,20 @@ def generate_questions(request):
         course = get_object_or_404(Course, id=int(selectedCourse))
         subject = get_object_or_404(Subject, id=int(selectedSubject), course=course)
         duration = get_object_or_404(TimeLimit, time_duration=int(selectedDuration))
+
+
+
+        # Generate initials from course and subject names
+        def get_initials(name):
+            return ''.join([word[0].upper() for word in name.split() if word[0].isalpha()]) 
+        course_initials = get_initials(course.name)
+        subject_initials = get_initials(subject.name)
+        # Generate a unique exam ID
+        unique_id = ''.join(random.choices(string.digits, k=5))  # 5-digit random number
+        # Construct the exam title
+        exam_title = f"{course_initials}-{subject_initials}-{duration.time_duration}-{unique_id}"
+
+
 
         # Get all topics related to the selected subject
         topics = Topic.objects.filter(subject=subject)
@@ -209,7 +223,12 @@ def generate_questions(request):
             final_questions.append({"scenario": None, "questions": non_scenario_questions})
 
         # Create a new GeneratedQuiz instance for the user with the specified subject and duration
-        generated_quiz = GeneratedQuiz.objects.create(user=request.user, subject=subject, duration=duration)
+        generated_quiz = GeneratedQuiz.objects.create(
+            user=request.user,
+            subject=subject,
+            duration=duration,
+            title=exam_title
+        )
 
         # Flatten the grouped questions into a single list to associate them with the generated quiz
         all_questions_list = []
