@@ -13,7 +13,7 @@
             <h4 class="fw-bold">
                 Score: {{ score }} / {{ num_items }} 
             </h4>
-            <a href="{% url 'reviewer' %}" class="btn btn-success">Review Other Exams</a>
+            <a href="{% url 'show_user_exams' %}" class="btn btn-success">Review Other Exams</a>
             <button class="btn btn-primary" hx-get="{% url 'view_feedback' %}?summary_id={{ summary_id }}" hx-push-url="true" hx-target="#feedback-container" hx-swap="outerHTML">View Feedback</button>
     </div>
 </div>
