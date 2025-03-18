@@ -1,129 +1,171 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block navbar %}
-    {% include 'components/navbar_for_reviewerpage.html' %}
+
+
+
+
+{% block extra_css %}
+<style>
+    .quiz-nav {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .quiz-nav div {
+        position: relative;
+        padding: 10px;
+        color: #333;
+        text-decoration: none;
+        transition: color 0.3s ease-in-out;
+    }
+
+    .quiz-nav div::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: 0;
+        height: 3px;
+        background-color: #007bff;
+        /* Bootstrap primary color */
+        transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
+    }
+
+    .quiz-nav div:hover::after,
+    .quiz-nav div.active::after {
+        width: 100%;
+        left: 0;
+    }
+
+    .quiz-nav div:hover,
+    .quiz-nav div.active {
+        color: #007bff;
+    }
+</style>
 {% endblock %}
+
+
+
+
+
+{% block navbar %}
+{% include 'components/navbar_for_reviewerpage.html' %}
+{% endblock %}
+
+
+
+
 {% block content %}
-
-
 <div id="takeexam" class="container-fluid">
-    <div class="row">
-
-        <!-- Sidebar for Generated Quiz -->
-        <aside class="col-md-3 d-none d-md-block p-3" style="margin-top: 120px; height: 70vh; overflow-y: auto;">
-            <h4 class="mb-3">Generated Quiz</h4>
-            <ul class="list-group">
-                
-                {% for quiz in generated_quiz %}
-                <li class="list-group-item">
-                    <a href="#" hx-get="{% url 'fetchquizresult' quiz.id %}"  hx-push-url="true"  hx-target="#quizresultcontainer"
-                        hx-swap="innerHTML" hx-trigger="click" class="text-decoration-none d-block">
-                        {{ quiz }}
-
-                        <span class="badge {% if quiz.is_finished %}bg-success{% else %}bg-warning{% endif %}">
-                            {% if quiz.is_finished %}
-                            Completed
-                            {% else %}
-                            Unfinished
-                            {% endif %}
-                        </span>
-                    </a>
-                </li>
-                {% empty %}
-                <li class="list-group-item text-muted">No questions generated yet.</li>
-                {% endfor %}
-            </ul>
-        </aside>
+    <main class="d-flex align-items-center justify-content-center vh-100">
+        <div id="quizresultcontainer" class="p-4 m-4 shadow-lg rounded bg-white">
 
 
-
-
-
-        <!-- Generate Question -->
-        <main class="col-md-9 d-flex align-items-center vh-100">
-            <div id="quizresultcontainer" class="p-4 m-4 shadow-sm rounded bg-white">
-                <form hx-post="{% url 'generate_questions' %}" hx-push-url="true" hx-target="#takeexam" hx-swap="outerHTML">
-                    {% csrf_token %}
-
-                    <!-- Course Selection -->
-                    <div class="mb-3">
-                        <label class="form-label">Select Course</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            {% for course in courses %}
-                            <button type="button" class="btn btn-outline-primary course-btn"
-                                data-value="{{ course.id }}" hx-get="{% url 'fetch_subjects' course.id %}"
-                                hx-push-url="false" hx-target="#subjectsContainer" hx-swap="innerHTML" hx-trigger="click">
-                                {{ course.name }}
-                            </button>
-                            {% endfor %}
-                        </div>
-                        <input type="hidden" name="selected_course" id="selectedCourse" required>
-                    </div> 
-
-                    <!-- Subject Selection -->
-                    <div class="mb-3">
-                        <label class="form-label">Select Subject</label>
-                        <div id="subjectsContainer" class="d-flex flex-wrap gap-2">
-                            <p class="text-muted">Select a course first to load subjects.</p>
-                        </div>
-                        <input type="hidden" name="selected_subject" id="selectedSubject" required>
-                    </div>
-
-                    <!-- Exam Duration Choices -->
-                    <div class="mb-3">
-                        <label class="form-label">Duration of Exam:</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            {% for duration in exam_duration %}
-                            <button type="button" class="btn btn-outline-dark duration-btn"
-                                data-value="{{ duration.time_duration }}">
-                                {{ duration }}
-                            </button>
-                            {% endfor %}
-                        </div>
-                        <input type="hidden" name="exam_duration" id="selectedDuration" required>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Generate Questions</button>
-                </form>
+            <div class="quiz-nav">
+                <div id="viewQuiz" onclick="navigateTo('{% url 'show_user_exams' %}')">View All Quiz</div>
+                <div id="generateExam" onclick="navigateTo('{% url 'reviewer' %}')" class="active">Generate Exam</div>
             </div>
-        </main>
-    </div>
+
+
+            <form hx-post="{% url 'generate_questions' %}" hx-push-url="true" hx-target="#takeexam" hx-swap="outerHTML">
+                {% csrf_token %}
+                <!-- Course Selection -->
+                <div class="mb-3">
+                    <label class="form-label">Select Course</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for course in courses %}
+                        <button type="button" class="btn btn-outline-primary course-btn rounded-pill"
+                            data-value="{{ course.id }}" hx-get="{% url 'fetch_subjects' course.id %}"
+                            hx-push-url="false" hx-target="#subjectsContainer" hx-swap="innerHTML" hx-trigger="click">
+                            {{ course.name }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="selected_course" id="selectedCourse" required>
+                </div>
+
+                <!-- Subject Selection -->
+                <div class="mb-3">
+                    <label class="form-label">Select Subject</label>
+                    <div id="subjectsContainer" class="d-flex flex-wrap gap-2">
+                        <p class="text-muted">Select a course first to load subjects.</p>
+                    </div>
+                    <input type="hidden" name="selected_subject" id="selectedSubject" required>
+                </div>
+
+                <!-- Exam Duration Choices -->
+                <div class="mb-3">
+                    <label class="form-label">Duration of Exam:</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for duration in exam_duration %}
+                        <button type="button" class="btn btn-outline-dark duration-btn rounded-pill"
+                            data-value="{{ duration.time_duration }}">
+                            {{ duration }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="exam_duration" id="selectedDuration" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary rounded-pill w-100">Generate Questions</button>
+            </form>
+
+        </div>
+    </main>
 </div>
 
 
 
 
-
 <script>
-    document.addEventListener("click", function(event) {
+    document.addEventListener("click", function (event) {
         // Handle course selection
         if (event.target.classList.contains("course-btn")) {
             document.querySelectorAll(".course-btn").forEach(btn => btn.classList.remove("active"));
             event.target.classList.add("active");
-    
+
             // Store selected course in the hidden input field
             document.getElementById("selectedCourse").value = event.target.dataset.value;
         }
-    
+
         // Handle subject selection (only if it's loaded dynamically)
         if (event.target.classList.contains("subject-btn")) {
             document.querySelectorAll(".subject-btn").forEach(btn => btn.classList.remove("active"));
             event.target.classList.add("active");
-    
+
             // Store selected subject in the hidden input field
             document.getElementById("selectedSubject").value = event.target.dataset.value;
         }
-    
+
         // Handle exam duration selection
         if (event.target.classList.contains("duration-btn")) {
             document.querySelectorAll(".duration-btn").forEach(btn => btn.classList.remove("active"));
             event.target.classList.add("active");
-    
+
             // Store selected duration in the hidden input field
             document.getElementById("selectedDuration").value = event.target.dataset.value;
         }
     });
 </script>
-    
+
+
+<script>
+    function navigateTo(url) {
+        window.location.href = url;
+    }
+    // Highlight the active tab when selected
+    document.querySelectorAll('.quiz-nav div').forEach(item => {
+        item.addEventListener('click', function () {
+            document.querySelectorAll('.quiz-nav div').forEach(div => div.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+</script>
+
 
 {% endblock %}

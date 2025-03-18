@@ -102,6 +102,18 @@ def reviewer(request):
     return render(request, "appReviewer/reviewer.html", context)
 
 
+
+@login_required
+def show_user_exams(request):
+    generated_quiz = GeneratedQuiz.objects.filter(user_id=request.user.id)
+    context={
+        "generated_quiz": generated_quiz
+    }
+    return render(request, "appReviewer/show_user_exams.html", context)
+
+
+
+
 @login_required
 def fetch_subjects(request, course_id):
     subjects = Subject.objects.filter(course_id=course_id)

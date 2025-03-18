@@ -14,6 +14,7 @@ urlpatterns = [
     path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
     path('profile/', views.profile, name='profile'),
     path('reviewer/', views.reviewer, name='reviewer'),
+    path('show_user_exams/', views.show_user_exams, name='show_user_exams'),
 
 
     # partial pages

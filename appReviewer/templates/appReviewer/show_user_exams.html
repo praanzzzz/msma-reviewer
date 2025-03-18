@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+
+
+{% block navbar %}
+{% include 'components/navbar_for_reviewerpage.html' %}
+{% endblock %}
+
+
+
+
+
+{% block extra_css %}
+<style>
+    .list-view .quiz-item {
+        width: 100%;
+    }
+
+    .list-view .quiz-item .card {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 15px;
+    }
+
+    .btn.active {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn i {
+        font-size: 1.2rem;
+    }
+
+
+
+
+
+
+    .quiz-nav {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .quiz-nav div {
+        position: relative;
+        padding: 10px;
+        color: #333;
+        text-decoration: none;
+        transition: color 0.3s ease-in-out;
+    }
+
+    .quiz-nav div::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: 0;
+        height: 3px;
+        background-color: #007bff;
+        /* Bootstrap primary color */
+        transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
+    }
+
+    .quiz-nav div:hover::after,
+    .quiz-nav div.active::after {
+        width: 100%;
+        left: 0;
+    }
+
+    .quiz-nav div:hover,
+    .quiz-nav div.active {
+        color: #007bff;
+    }
+</style>
+{% endblock %}
+
+
+
+
+
+
+{% block content %}
+<br><br><br><br><br><br><br><br>
+<div class="container py-4">
+    <div class="quiz-nav">
+        <div id="viewQuiz" onclick="navigateTo('{% url 'show_user_exams' %}')"  class="active">View All Quiz</div>
+        <div id="generateExam" onclick="navigateTo('{% url 'reviewer' %}')">Generate Exam</div>
+    </div>
+
+
+    <h4 class="mb-3">Your Exams</h4>
+
+    <div class="d-flex justify-content-between mb-3">
+        <div></div>
+        <div>
+            <button id="listViewBtn" class="btn btn-outline-primary active">
+                <i class="bi bi-list"></i>
+            </button>
+            <button id="gridViewBtn" class="btn btn-outline-primary">
+                <i class="bi bi-grid"></i>
+            </button>
+
+        </div>
+    </div>
+
+    <div id="quizContainer" class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3 list-view">
+        {% for quiz in generated_quiz %}
+        <div class="col quiz-item">
+            <div class="card h-100 shadow-sm p-3 rounded">
+                <a href="#" hx-get="{% url 'fetchquizresult' quiz.id %}" hx-push-url="true"
+                    hx-target="#quizresultcontainer" hx-swap="innerHTML" hx-trigger="click"
+                    class="text-decoration-none">
+                    <h5 class="card-title">{{ quiz }}</h5>
+                </a>
+                <span class="badge {% if quiz.is_finished %}bg-success{% else %}bg-warning{% endif %}">
+                    {% if quiz.is_finished %}Completed{% else %}Unfinished{% endif %}
+                </span>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col text-muted">No questions generated yet.</div>
+        {% endfor %}
+    </div>
+</div>
+
+
+
+
+<script>
+    document.getElementById("listViewBtn").addEventListener("click", function () {
+        document.getElementById("quizContainer").classList.remove("row-cols-md-2", "row-cols-lg-4");
+        document.getElementById("quizContainer").classList.add("list-view");
+        document.getElementById("listViewBtn").classList.add("active");
+        document.getElementById("gridViewBtn").classList.remove("active");
+        document.getElementById("listViewBtn").innerHTML = '<i class="bi bi-list"></i>';
+        document.getElementById("gridViewBtn").innerHTML = '<i class="bi bi-grid"></i>';
+    });
+
+    document.getElementById("gridViewBtn").addEventListener("click", function () {
+        document.getElementById("quizContainer").classList.remove("list-view");
+        document.getElementById("quizContainer").classList.add("row-cols-md-2", "row-cols-lg-4");
+        document.getElementById("gridViewBtn").classList.add("active");
+        document.getElementById("listViewBtn").classList.remove("active");
+        document.getElementById("gridViewBtn").innerHTML = '<i class="bi bi-grid"></i>';
+        document.getElementById("listViewBtn").innerHTML = '<i class="bi bi-list"></i>';
+    });
+</script>
+
+<script>
+    function navigateTo(url) {
+        window.location.href = url;
+    }
+    // Highlight the active tab when selected
+    document.querySelectorAll('.quiz-nav div').forEach(item => {
+        item.addEventListener('click', function () {
+            document.querySelectorAll('.quiz-nav div').forEach(div => div.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+</script>
+
+{% endblock %}
