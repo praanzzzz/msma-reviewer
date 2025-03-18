@@ -146,7 +146,7 @@ def delete_generated_exam(request, quiz_id):
 
     if request.method == "POST":
         quiz.delete()
-        messages.success(request, "Exam deleted successfully.")
+        # messages.success(request, "Exam deleted successfully.")
         return HttpResponse("") 
 
     return HttpResponse(status=400)  
