@@ -13,7 +13,7 @@ signer = Signer()
 import json
 import random
 import string
-
+from django.http import HttpResponse
 
 
 #                fadgMSMA@2025
@@ -90,6 +90,7 @@ def my_logout(request):
         return redirect("my_login")
 
 
+
 @login_required
 def reviewer(request):
     courses = Course.objects.all()
@@ -105,15 +106,6 @@ def reviewer(request):
 
 
 
-@login_required
-def show_user_exams(request):
-    generated_quiz = GeneratedQuiz.objects.filter(user_id=request.user.id)
-    context={
-        "generated_quiz": generated_quiz
-    }
-    return render(request, "appReviewer/show_user_exams.html", context)
-
-
 
 
 @login_required
@@ -122,6 +114,42 @@ def fetch_subjects(request, course_id):
     return render(request, "partials/subjects.html", {"subjects": subjects})
 
 
+
+
+
+@login_required
+def show_user_exams(request):
+    generated_quiz = GeneratedQuiz.objects.filter(user=request.user)
+    # Calculate summary details for each quiz in the template
+    for quiz in generated_quiz:
+        summaries = Summary.objects.filter(generated_quiz=quiz, user=request.user)
+        if summaries.exists():
+            summary = summaries.first()
+            quiz.summary_data = {
+                "id": summary.id,
+                "score": summary.score,
+                "num_items": summary.num_items,
+                "percentage": (summary.score / summary.num_items) * 100 if summary.num_items > 0 else 0,
+            }
+        else:
+            quiz.summary_data = None #add none so that template does not try to get data from a non existant summary
+    context = {
+        "generated_quiz": generated_quiz,
+    }
+    return render(request, "appReviewer/show_user_exams.html", context)
+
+
+
+@login_required
+def delete_generated_exam(request, quiz_id):
+    quiz = get_object_or_404(GeneratedQuiz, id=quiz_id, user=request.user)
+
+    if request.method == "POST":
+        quiz.delete()
+        messages.success(request, "Exam deleted successfully.")
+        return HttpResponse("") 
+
+    return HttpResponse(status=400)  
 
 '''
     DATA STRUCT AND ALGO TASKS:
@@ -406,32 +434,6 @@ def view_feedback(request):
 
 
 
-
-
-@login_required
-def fetchquizresult(request, quiz_id):
-    quiz = get_object_or_404(GeneratedQuiz, id=quiz_id)
-    summaries = Summary.objects.filter(generated_quiz=quiz)
-    if summaries.exists():
-        summary = summaries.first()
-        summary_id = summary.id
-    else:
-        summary = None
-        summary_id = None #add this line
-    # Compute percentage safely
-    percentage = 0
-    if summary and summary.num_items > 0:
-        percentage = (summary.score / summary.num_items) * 100
-
-    context = {
-        "quiz": quiz,
-        "summary": summary,
-        "percentage": percentage,
-        "summary_id": summary_id,
-    }
-    if request.headers.get("HX-Request"):
-        return render(request, "partials/fetchquizresult.html", context)
-    return redirect('reviewer')
 
 
 

@@ -15,12 +15,12 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('reviewer/', views.reviewer, name='reviewer'),
     path('show_user_exams/', views.show_user_exams, name='show_user_exams'),
+    path("delete-exam/<int:quiz_id>/", views.delete_generated_exam, name="delete_generated_exam"),
 
 
     # partial pages
     path('generate_questions/', views.generate_questions, name='generate_questions'),
     path('submit_quiz/', views.submit_quiz, name="submit_quiz"),
-    path('fetchquizresult/<int:quiz_id>/', views.fetchquizresult, name='fetchquizresult'),
     path('fetch_subjects/<int:course_id>/', views.fetch_subjects, name="fetch_subjects"),
     path('view_feedback/', views.view_feedback, name="view_feedback"),
 ]
