@@ -6,8 +6,8 @@
 {% if error %}
     <p style="color:red;">{{ error }}</p>
 {% else %} 
-    <h3>Feedback for Quiz: {{ summary.generated_quiz.id }}</h3>
-    <h5>Subject: {{summary.generated_quiz.subject}}</h5>
+    <h3>{{ summary.generated_quiz.title }}</h3>
+    {{summary.generated_quiz.subject}}
     <p>Score: {{ summary.score }} / {{ summary.num_items }}</p>
 
     {% for item in feedback_data %}

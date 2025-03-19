@@ -56,18 +56,18 @@
 
 
 {% block content %}
-<div id="takeexam" class="container-fluid">
+<div id="reviewerpage-container" class="container-fluid">
     <main class="d-flex align-items-center justify-content-center vh-100">
         <div id="quizresultcontainer" class="p-4 m-4 rounded bg-white">
 
 
             <div class="quiz-nav">
-                <div id="viewQuiz" onclick="navigateTo('{% url 'show_user_exams' %}')">View All Quiz</div>
+                <div id="viewQuiz" onclick="navigateTo('{% url 'show_user_exams' %}')">View All Exams</div>
                 <div id="generateExam" onclick="navigateTo('{% url 'reviewer' %}')" class="active">Generate Exam</div>
             </div>
 
 
-            <form hx-post="{% url 'generate_questions' %}" hx-push-url="true" hx-target="#takeexam" hx-swap="outerHTML">
+            <form hx-post="{% url 'generate_questions' %}" hx-push-url="true" hx-target="#reviewerpage-container" hx-swap="outerHTML">
                 {% csrf_token %}
                 <!-- Course Selection -->
                 <div class="mb-3">
