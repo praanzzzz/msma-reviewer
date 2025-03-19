@@ -1,5 +1,18 @@
+{% block extra_css %}
+    <style>
+        #quizresult-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 400px;
+            width: 100%;
+        }
 
-<div id="feedback-container" class="card shadow-sm border-0 mx-auto" style="max-width: 400px;">
+    </style>
+{% endblock %}
+
+<div id="quizresult-container" class="card shadow-sm border-0 mx-auto" style="max-width: 400px;">
     <div class="card-header bg-primary text-white text-center">
         <h5 class="mb-0">Quiz Result: {{ quiz }}</h5>
     </div>
@@ -15,7 +28,7 @@
             <button class="btn btn-primary btn-sm" 
                 hx-get="{% url 'view_feedback' %}?summary_id={{ summary_id }}" 
                 hx-push-url="true" 
-                hx-target="#feedback-container" 
+                hx-target="#quizresult-container" 
                 hx-swap="outerHTML">
                 View Feedback
             </button>

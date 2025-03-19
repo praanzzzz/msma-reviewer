@@ -1,11 +1,15 @@
 {% extends 'base.html' %}
 {% load static %}
 
+
+
+
 {% block extra_css %}
 <style>
     .list-view .quiz-item {
-        width: 100%;
-        margin-bottom: 3px;
+        width: 70%;
+        margin-bottom: 10px;
+        margin: 0 auto 3px; /* Center items */
     }
 
     .list-view .quiz-item .card {
@@ -75,17 +79,31 @@
         justify-content: space-between;
         align-items: center;
     }
+
+    #showuserexam_quizresultcontainer {
+        margin-top: 190px;
+        margin-bottom: 50px;
+    }
+
 </style>
 {% endblock %}
 
-{% block content %}
-<br><br><br><br><br><br><br>
 
-<div id="showuserexam_quizresultcontainer" class="container py-4">
+
+
+
+
+
+{% block content %}
+<div id="showuserexam_quizresultcontainer">
+
+
     <div class="quiz-nav">
         <div id="viewQuiz" onclick="navigateTo('{% url 'show_user_exams' %}')" class="active">View All Exams</div>
         <div id="generateExam" onclick="navigateTo('{% url 'reviewer' %}')">Generate Exam</div>
     </div>
+
+
 
     <div class="d-flex justify-content-between mb-3">
         <div></div>
@@ -99,19 +117,25 @@
         </div>
     </div>
 
+
+
+
     <div id="quizContainer" class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
         {% for quiz in generated_quiz %}
         <div class="col quiz-item" id="quiz-{{ quiz.id }}">
             <div class="card h-100 shadow-sm p-3 rounded">
                 <div class="quiz-details">
                     <h6 class="card-title mb-1">{{ quiz }}</h6>
+                    <!-- <h6 class="card-title mb-1">
+                        {{ quiz }} <span class="small text-muted">{{ quiz.created_at|timesince }} ago</span>
+                    </h6> -->
                     {% if quiz.is_finished and quiz.summary_data %}
-                    <div>
-                        <strong style="font-size: 0.85rem;">Score:</strong> <span style="font-size: 0.85rem;">{{ quiz.summary_data.score }} / {{ quiz.summary_data.num_items }}</span><br>
-                        <strong style="font-size: 0.85rem;">Percentage:</strong> <span style="font-size: 0.85rem;">{{ quiz.summary_data.percentage|floatformat:2 }}%</span>
-                    </div>
+                        <div class="mb-2">
+                            <strong style="font-size: 0.85rem;">Score:</strong> <span style="font-size: 0.85rem;">{{ quiz.summary_data.score }} / {{ quiz.summary_data.num_items }}</span><br>
+                            <strong style="font-size: 0.85rem;">Percentage:</strong> <span style="font-size: 0.85rem;">{{ quiz.summary_data.percentage|floatformat:2 }}%</span>
+                        </div>
                     {% elif not quiz.is_finished %}
-                        <div>
+                        <div class="mb-2">
                             <strong style="font-size: 0.85rem;">Score:</strong> <span style="font-size: 0.85rem;">N/A</span><br>
                             <strong style="font-size: 0.85rem;">Percentage:</strong> <span style="font-size: 0.85rem;">N/A</span>
                         </div>
@@ -124,8 +148,8 @@
                             hx-get="{% url 'view_feedback' %}?summary_id={{ quiz.summary_data.id }}" 
                             hx-push-url="true"
                             hx-target="#showuserexam_quizresultcontainer" 
-                            hx-swap="innerHTML">
-                            View Feedback
+                            hx-swap="outerHTML">
+                            View Feedback   
                         </button>
                         {% elif not quiz.is_finished %}
                         <a href="#" class="btn btn-warning btn-sm">Continue Exam</a>
@@ -147,6 +171,9 @@
         <div class="col text-muted">No exams generated yet.</div>
         {% endfor %}
     </div>
+
+
+
 </div>
 
 <script>
