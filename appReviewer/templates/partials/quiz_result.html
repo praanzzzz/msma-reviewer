@@ -1,19 +1,24 @@
 
-
-<div hx-boost>
-    <a href="{% url 'reviewer' %}"><button class="btn btn-primary my-4">Go Back</button></a>
-</div>
-
-<div id="feedback-container" class="card shadow-sm border-0">
+<div id="feedback-container" class="card shadow-sm border-0 mx-auto" style="max-width: 400px;">
     <div class="card-header bg-primary text-white text-center">
         <h5 class="mb-0">Quiz Result: {{ quiz }}</h5>
     </div>
     <div class="card-body text-center">
-
-            <h4 class="fw-bold">
-                Score: {{ score }} / {{ num_items }} 
-            </h4>
-            <a href="{% url 'show_user_exams' %}" class="btn btn-success">Review Other Exams</a>
-            <button class="btn btn-primary" hx-get="{% url 'view_feedback' %}?summary_id={{ summary_id }}" hx-push-url="true" hx-target="#feedback-container" hx-swap="outerHTML">View Feedback</button>
+        <h4 class="fw-bold mb-3">
+            Score: <span class="text-success">{{ score }}</span> / {{ num_items }}
+        </h4>
+        
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{% url 'show_user_exams' %}" class="btn btn-success btn-sm">
+                Review Other Exams
+            </a>
+            <button class="btn btn-primary btn-sm" 
+                hx-get="{% url 'view_feedback' %}?summary_id={{ summary_id }}" 
+                hx-push-url="true" 
+                hx-target="#feedback-container" 
+                hx-swap="outerHTML">
+                View Feedback
+            </button>
+        </div>
     </div>
 </div>

@@ -1,28 +1,33 @@
 {% extends 'base.html' %}
 {% load static %}
 
-
-
 {% block extra_css %}
 <style>
     .list-view .quiz-item {
         width: 100%;
+        margin-bottom: 3px;
     }
 
     .list-view .quiz-item .card {
         display: flex;
         flex-direction: row;
         align-items: center;
-        padding: 15px;
+        padding: 5px;
+        min-height: 40px;
+        font-size: 0.8rem;
+        justify-content: space-between;
+        border-radius: 8px;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .list-view .quiz-item .btn {
+        padding: 3px 6px;
+        font-size: 0.75rem;
     }
 
     .btn.active {
         background-color: #007bff;
         color: white;
-    }
-
-    .btn i {
-        font-size: 1.2rem;
     }
 
     .quiz-nav {
@@ -35,61 +40,50 @@
         cursor: pointer;
     }
 
-    .quiz-nav div {
-        position: relative;
-        padding: 10px;
-        color: #333;
-        text-decoration: none;
-        transition: color 0.3s ease-in-out;
-    }
-
-    .quiz-nav div::after {
-        content: "";
-        position: absolute;
-        left: 50%;
-        bottom: 0;
-        width: 0;
-        height: 3px;
-        background-color: #007bff;
-        transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
-    }
-
-    .quiz-nav div:hover::after,
-    .quiz-nav div.active::after {
-        width: 100%;
-        left: 0;
-    }
-
-    .quiz-nav div:hover,
     .quiz-nav div.active {
         color: #007bff;
+        border-bottom: 3px solid #007bff;
     }
 
-
     .quiz-item:hover .card {
-        transform: scale(1.05);
+        transform: translateY(-3px) scale(1.03);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f8f9fa;
-        border: 2px solid #4f8fef;
-        /* Bootstrap primary color */
-        box-shadow: 0px 0px 10px rgba(13, 110, 253, 0.5);
+        box-shadow: 0px 4px 12px rgba(13, 110, 253, 0.3);
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+
+    .quiz-item:hover .btn {
+        opacity: 1;
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .bi-trash {
+        font-size: 0.8rem;
+    }
+    
+    .list-view .quiz-details {
+        flex-grow: 1;
+    }
+    
+    .list-view .quiz-actions {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .grid-view .quiz-actions-grid {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 </style>
 {% endblock %}
 
-
-
-
 {% block content %}
 <br><br><br><br><br><br><br>
 
-
-
-
 <div id="showuserexam_quizresultcontainer" class="container py-4">
     <div class="quiz-nav">
-        <div id="viewQuiz" onclick="navigateTo('{% url 'show_user_exams' %}')" class="active">View All Quiz</div>
+        <div id="viewQuiz" onclick="navigateTo('{% url 'show_user_exams' %}')" class="active">View All Exams</div>
         <div id="generateExam" onclick="navigateTo('{% url 'reviewer' %}')">Generate Exam</div>
     </div>
 
@@ -109,37 +103,44 @@
         {% for quiz in generated_quiz %}
         <div class="col quiz-item" id="quiz-{{ quiz.id }}">
             <div class="card h-100 shadow-sm p-3 rounded">
-                <h6 class="card-title">{{ quiz }}</h6>
-                <!-- {{ quiz.created_at|timesince }} ago -->
-                {% if quiz.is_finished and quiz.summary_data %}
-                <div>
-                    <!-- <strong>Remarks:</strong> Completed <br> -->
-                    <strong>Score:</strong> {{ quiz.summary_data.score }} / {{ quiz.summary_data.num_items }} <br>
-                    <strong>Percentage:</strong> {{ quiz.summary_data.percentage|floatformat:2 }}%
+                <div class="quiz-details">
+                    <h6 class="card-title mb-1">{{ quiz }}</h6>
+                    {% if quiz.is_finished and quiz.summary_data %}
+                    <div>
+                        <strong style="font-size: 0.85rem;">Score:</strong> <span style="font-size: 0.85rem;">{{ quiz.summary_data.score }} / {{ quiz.summary_data.num_items }}</span><br>
+                        <strong style="font-size: 0.85rem;">Percentage:</strong> <span style="font-size: 0.85rem;">{{ quiz.summary_data.percentage|floatformat:2 }}%</span>
+                    </div>
+                    {% elif not quiz.is_finished %}
+                        <div>
+                            <strong style="font-size: 0.85rem;">Score:</strong> <span style="font-size: 0.85rem;">N/A</span><br>
+                            <strong style="font-size: 0.85rem;">Percentage:</strong> <span style="font-size: 0.85rem;">N/A</span>
+                        </div>
+                    {% endif %}
                 </div>
-
-                <button class="btn brm-sm btn-primary"
-                    hx-get="{% url 'view_feedback' %}?summary_id={{ quiz.summary_data.id }}" hx-push-url="true"
-                    hx-target="#showuserexam_quizresultcontainer" hx-swap="innerHTML">
-                    View Feedback
-                </button>
-
-                {% elif not quiz.is_finished %}
-                <a href="#" class="btn btn-sm btn-warning">
-                    Continue Exam
-                </a>
-                {% endif %}
-                <!-- HTMX Delete Button -->
-                <button class="btn btn-outline-danger btn-sm mt-2"
-                    hx-post="{% url 'delete_generated_exam' quiz.id %}"
-                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                    hx-target="#quiz-{{ quiz.id }}"
-                    hx-swap="outerHTML"
-                    hx-confirm="Are you sure you want to delete this exam?"
-                    title="Delete Exam">
-                    <i class="bi bi-trash"></i> 
-                </button>
-
+                <div class="quiz-actions">
+                    <div class="quiz-actions-grid">
+                        {% if quiz.is_finished and quiz.summary_data %}
+                        <button class="btn btn-primary btn-sm"
+                            hx-get="{% url 'view_feedback' %}?summary_id={{ quiz.summary_data.id }}" 
+                            hx-push-url="true"
+                            hx-target="#showuserexam_quizresultcontainer" 
+                            hx-swap="innerHTML">
+                            View Feedback
+                        </button>
+                        {% elif not quiz.is_finished %}
+                        <a href="#" class="btn btn-warning btn-sm">Continue Exam</a>
+                        {% endif %}
+                        <button class="btn btn-outline-danger btn-sm"
+                            hx-post="{% url 'delete_generated_exam' quiz.id %}"
+                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                            hx-target="#quiz-{{ quiz.id }}"
+                            hx-swap="outerHTML"
+                            hx-confirm="Are you sure you want to delete this exam?"
+                            title="Delete Exam">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         {% empty %}
@@ -148,45 +149,32 @@
     </div>
 </div>
 
-
-
-
-    
-
 <script>
     function navigateTo(url) {
         window.location.href = url;
     }
 
-    // Ensure Grid View is default on page load
     document.addEventListener("DOMContentLoaded", function () {
-        document.getElementById("quizContainer").classList.remove("list-view");
         document.getElementById("quizContainer").classList.add("row-cols-md-2", "row-cols-lg-4");
-        document.getElementById("gridViewBtn").classList.add("active");
-        document.getElementById("listViewBtn").classList.remove("active");
+        document.getElementById("quizContainer").classList.add("grid-view");
     });
 
-    // Toggle between list and grid view
     document.getElementById("listViewBtn").addEventListener("click", function () {
-        document.getElementById("quizContainer").classList.remove("row-cols-md-2", "row-cols-lg-4");
-        document.getElementById("quizContainer").classList.add("list-view");
-        document.getElementById("listViewBtn").classList.add("active");
+        const quizContainer = document.getElementById("quizContainer");
+        quizContainer.classList.add("list-view");
+        quizContainer.classList.remove("row-cols-md-2", "row-cols-lg-4");
+        quizContainer.classList.remove("grid-view");
+        this.classList.add("active");
         document.getElementById("gridViewBtn").classList.remove("active");
     });
 
     document.getElementById("gridViewBtn").addEventListener("click", function () {
-        document.getElementById("quizContainer").classList.remove("list-view");
-        document.getElementById("quizContainer").classList.add("row-cols-md-2", "row-cols-lg-4");
-        document.getElementById("gridViewBtn").classList.add("active");
+        const quizContainer = document.getElementById("quizContainer");
+        quizContainer.classList.remove("list-view");
+        quizContainer.classList.add("row-cols-md-2", "row-cols-lg-4");
+        quizContainer.classList.add("grid-view");
+        this.classList.add("active");
         document.getElementById("listViewBtn").classList.remove("active");
-    });
-
-    // Highlight the active tab when selected
-    document.querySelectorAll('.quiz-nav div').forEach(item => {
-        item.addEventListener('click', function () {
-            document.querySelectorAll('.quiz-nav div').forEach(div => div.classList.remove('active'));
-            this.classList.add('active');
-        });
     });
 </script>
 
