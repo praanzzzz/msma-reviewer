@@ -1,9 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
 
-
-
-
 {% block extra_css %}
 <style>
     .quiz-nav {
@@ -48,32 +45,41 @@
     }
 
     #reviewerpage-container {
-        margin-top:-20px;
+        margin-top: -20px;
+    }
+
+    /* Spinner styles */
+    .spinner-container {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 </style>
 {% endblock %}
-
-
-
-
-
-
 
 {% block content %}
 <div id="reviewerpage-container" class="container-fluid">
     <main class="d-flex align-items-center justify-content-center vh-100">
         <div id="quizresultcontainer" class="p-4 m-4 rounded bg-white">
-
-
             <div class="quiz-nav">
                 <div id="viewQuiz" onclick="navigateTo('{% url 'show_user_exams' %}')">View All Exams</div>
                 <div id="generateExam" onclick="navigateTo('{% url 'reviewer' %}')" class="active">Generate Exam</div>
             </div>
 
-
-            <form hx-post="{% url 'generate_questions' %}" hx-push-url="true" hx-target="#reviewerpage-container" hx-swap="outerHTML">
+            <form id="generateForm" hx-post="{% url 'generate_questions' %}" hx-push-url="true" hx-target="#reviewerpage-container" hx-swap="outerHTML">
                 {% csrf_token %}
-                <!-- Course Selection -->
                 <div class="mb-3">
                     <label class="form-label">Select Course</label>
                     <div class="d-flex flex-wrap gap-2">
@@ -88,7 +94,6 @@
                     <input type="hidden" name="selected_course" id="selectedCourse" required>
                 </div>
 
-                <!-- Subject Selection -->
                 <div class="mb-3">
                     <label class="form-label">Select Subject</label>
                     <div id="subjectsContainer" class="d-flex flex-wrap gap-2">
@@ -97,7 +102,6 @@
                     <input type="hidden" name="selected_subject" id="selectedSubject" required>
                 </div>
 
-                <!-- Exam Duration Choices -->
                 <div class="mb-3">
                     <label class="form-label">Duration of Exam:</label>
                     <div class="d-flex flex-wrap gap-2">
@@ -113,13 +117,24 @@
 
                 <button type="submit" class="btn btn-primary rounded-pill w-100">Generate Questions</button>
             </form>
-
         </div>
     </main>
 </div>
 
-
-
+<!-- spinner code -->
+<div class="spinner-container" id="spinner">
+    <div class="spinner">
+        <div class="spinner-grow text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div class="spinner-grow text-success" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div class="spinner-grow text-info" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
 
 <script>
     document.addEventListener("click", function (event) {
@@ -127,17 +142,13 @@
         if (event.target.classList.contains("course-btn")) {
             document.querySelectorAll(".course-btn").forEach(btn => btn.classList.remove("active"));
             event.target.classList.add("active");
-
-            // Store selected course in the hidden input field
             document.getElementById("selectedCourse").value = event.target.dataset.value;
         }
 
-        // Handle subject selection (only if it's loaded dynamically)
+        // Handle subject selection
         if (event.target.classList.contains("subject-btn")) {
             document.querySelectorAll(".subject-btn").forEach(btn => btn.classList.remove("active"));
             event.target.classList.add("active");
-
-            // Store selected subject in the hidden input field
             document.getElementById("selectedSubject").value = event.target.dataset.value;
         }
 
@@ -145,19 +156,25 @@
         if (event.target.classList.contains("duration-btn")) {
             document.querySelectorAll(".duration-btn").forEach(btn => btn.classList.remove("active"));
             event.target.classList.add("active");
-
-            // Store selected duration in the hidden input field
             document.getElementById("selectedDuration").value = event.target.dataset.value;
         }
     });
-</script>
 
+    // spinner htmx + js
+    document.getElementById('generateForm').addEventListener('htmx:beforeRequest', function(evt){
+        document.getElementById('spinner').style.display = 'flex';
+    });
+
+    document.getElementById('generateForm').addEventListener('htmx:afterRequest', function(evt){
+        document.getElementById('spinner').style.display = 'none';
+    });
+</script>
 
 <script>
     function navigateTo(url) {
         window.location.href = url;
     }
-    // Highlight the active tab when selected
+
     document.querySelectorAll('.quiz-nav div').forEach(item => {
         item.addEventListener('click', function () {
             document.querySelectorAll('.quiz-nav div').forEach(div => div.classList.remove('active'));
@@ -165,6 +182,4 @@
         });
     });
 </script>
-
-
 {% endblock %}
