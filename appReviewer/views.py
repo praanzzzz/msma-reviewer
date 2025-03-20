@@ -1,19 +1,15 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .utils import send_verification_email
 from django.contrib import messages
 from .forms import RegisterForm, LoginForm
 from .models import CustomUser, Course, Subject, Topic, Scenario, LevelOfDifficulty, Question, GeneratedQuiz, Summary, TimeLimit
 from django.core.signing import Signer, BadSignature, SignatureExpired
-import random
-from django.http import HttpResponseBadRequest 
-from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 signer = Signer()
-import json
-import random
-import string
-from django.http import HttpResponse
+import random, json, string, time
+from django.http import HttpResponse, HttpResponseBadRequest
+
 
 
 #                fadgMSMA@2025
@@ -117,11 +113,17 @@ def fetch_subjects(request, course_id):
 
 
 
+from django.core.paginator import Paginator
 @login_required
 def show_user_exams(request):
-    generated_quiz = GeneratedQuiz.objects.filter(user=request.user)
-    # Calculate summary details for each quiz in the template
-    for quiz in generated_quiz:
+    page_number = request.GET.get('page', 1)
+    page_size = 6
+
+    generated_quiz = GeneratedQuiz.objects.filter(user=request.user).order_by('-created_at')
+    paginator = Paginator(generated_quiz, page_size)
+    page_obj = paginator.get_page(page_number)
+
+    for quiz in page_obj:
         summaries = Summary.objects.filter(generated_quiz=quiz, user=request.user)
         if summaries.exists():
             summary = summaries.first()
@@ -132,11 +134,26 @@ def show_user_exams(request):
                 "percentage": (summary.score / summary.num_items) * 100 if summary.num_items > 0 else 0,
             }
         else:
-            quiz.summary_data = None #add none so that template does not try to get data from a non existant summary
+            quiz.summary_data = None
+
     context = {
-        "generated_quiz": generated_quiz,
+        "generated_quiz": page_obj,
+        "page_obj": page_obj,
+        "view_mode": request.GET.get('view_mode', 'grid'),  # Add view_mode, default to 'grid'
     }
-    return render(request, "appReviewer/show_user_exams.html", context)
+
+
+    # Debugging: Print pagination details to console
+    # print(f"Current Page: {page_obj.number}")
+    # print(f"Total Pages: {paginator.num_pages}")
+    # print(f"Has Next Page: {page_obj.has_next()}")
+    # print(f"Next Page Number: {page_obj.next_page_number() if page_obj.has_next() else 'None'}")
+
+
+    if request.headers.get('HX-Request') == 'true':
+        return render(request, "partials/exam_list_partial.html", context)
+    else:
+        return render(request, "appReviewer/show_user_exams.html", context)
 
 
 
@@ -302,6 +319,8 @@ def generate_questions(request):
             "generated_quiz_id": generated_quiz.id,
             "subject": subject.name,
             "duration": duration.time_duration}
+        
+        time.sleep(3) 
         return render(request, "partials/generated_questions.html", context)
     return redirect("reviewer")
 
