@@ -1,17 +1,14 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .utils import send_verification_email
 from django.contrib import messages
 from .forms import RegisterForm, LoginForm
 from .models import CustomUser, Course, Subject, Topic, Scenario, LevelOfDifficulty, Question, GeneratedQuiz, Summary, TimeLimit
 from django.core.signing import Signer, BadSignature, SignatureExpired
-import random
-from django.http import HttpResponseBadRequest 
-from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 signer = Signer()
 import random, json, string, time
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 
 
 
@@ -302,7 +299,7 @@ def generate_questions(request):
             "subject": subject.name,
             "duration": duration.time_duration}
         
-        time.sleep(4) 
+        time.sleep(3) 
         return render(request, "partials/generated_questions.html", context)
     return redirect("reviewer")
 
