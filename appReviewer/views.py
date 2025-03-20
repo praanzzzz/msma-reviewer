@@ -302,7 +302,7 @@ def generate_questions(request):
             "subject": subject.name,
             "duration": duration.time_duration}
         
-        time.sleep(2) 
+        time.sleep(4) 
         return render(request, "partials/generated_questions.html", context)
     return redirect("reviewer")
 
