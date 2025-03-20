@@ -10,10 +10,9 @@ from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 signer = Signer()
-import json
-import random
-import string
+import random, json, string, time
 from django.http import HttpResponse
+
 
 
 #                fadgMSMA@2025
@@ -302,6 +301,8 @@ def generate_questions(request):
             "generated_quiz_id": generated_quiz.id,
             "subject": subject.name,
             "duration": duration.time_duration}
+        
+        time.sleep(2) 
         return render(request, "partials/generated_questions.html", context)
     return redirect("reviewer")
 
