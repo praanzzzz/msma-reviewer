@@ -141,15 +141,6 @@ def show_user_exams(request):
         "page_obj": page_obj,
         "view_mode": request.GET.get('view_mode', 'grid'),  # Add view_mode, default to 'grid'
     }
-
-
-    # Debugging: Print pagination details to console
-    # print(f"Current Page: {page_obj.number}")
-    # print(f"Total Pages: {paginator.num_pages}")
-    # print(f"Has Next Page: {page_obj.has_next()}")
-    # print(f"Next Page Number: {page_obj.next_page_number() if page_obj.has_next() else 'None'}")
-
-
     if request.headers.get('HX-Request') == 'true':
         return render(request, "partials/exam_list_partial.html", context)
     else:
@@ -216,8 +207,8 @@ def generate_questions(request):
         topics = Topic.objects.filter(subject=subject)
 
         # Map duration to a predefined number of questions, defaulting to 25 if not found
-        duration_map = {1: 6, 2: 50, 3: 100}
-        question_count = duration_map.get(duration.time_duration, 6)
+        duration_map = {1: 25, 2: 50, 3: 100}
+        question_count = duration_map.get(duration.time_duration, 25)
 
         # Split question count for scenario and non-scenario
         scenario_count = question_count // 2
@@ -319,8 +310,7 @@ def generate_questions(request):
             "generated_quiz_id": generated_quiz.id,
             "subject": subject.name,
             "duration": duration.time_duration}
-        
-        time.sleep(3) 
+        time.sleep(2) 
         return render(request, "partials/generated_questions.html", context)
     return redirect("reviewer")
 
@@ -446,8 +436,6 @@ def view_feedback(request):
         return render(request, "partials/view_feedback.html", context)
 
     return redirect("reviewer")
-
-
 
 
 
