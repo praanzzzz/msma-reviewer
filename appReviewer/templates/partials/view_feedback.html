@@ -3,6 +3,12 @@
         #view-feedback-container{
             margin-top: 100px;
         }
+        .scenario-image, .question-image {
+            max-width: 300px; /* Adjust as needed */
+            height: auto;
+            display: block;
+            margin-bottom: 10px;
+        }
     </style>
 {% endblock %}
 
@@ -21,7 +27,10 @@
         {% for item in feedback_data %}
             {% if item.show_scenario and item.scenario %}
                 <div style="background-color: #f0f0f0; padding: 10px; margin-bottom: 10px;">
-                    <strong>Scenario:</strong> {{ item.scenario }}
+                    <strong>Scenario:</strong> {{ item.scenario.name }}
+                    {% if item.scenario.image %}
+                        <img src="{{ item.scenario.image.url }}" alt="Scenario Image" class="scenario-image">
+                    {% endif %}
                 </div>
                 <p><em>Refer to the scenario above.</em></p>
             {% elif item.scenario %}
@@ -30,6 +39,9 @@
 
             <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
                 <p><strong>{{ forloop.counter }}. {{ item.question.question_text }}</strong></p>
+                {% if item.question.image %}
+                    <img src="{{ item.question.image.url }}" alt="Question Image" class="question-image">
+                {% endif %}
 
                 {% for letter, option in item.options.items %}
                     {% if item.user_answer == letter and not item.is_correct %}
