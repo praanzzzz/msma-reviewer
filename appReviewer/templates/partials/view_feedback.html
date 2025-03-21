@@ -1,4 +1,3 @@
-
 {% block extra_css %}
     <style>
         #view-feedback-container{
@@ -7,8 +6,7 @@
     </style>
 {% endblock %}
 
-
-<div  id="view-feedback-container">
+<div id="view-feedback-container">
     <div>
         <a href="{% url 'show_user_exams' %}"><button class="btn btn-primary my-4">Go Back</button></a>
     </div>
@@ -17,13 +15,22 @@
         <p style="color:red;">{{ error }}</p>
     {% else %} 
         <h3>{{ summary.generated_quiz.title }}</h3>
-        {{summary.generated_quiz.subject}}
+        <p>{{ summary.generated_quiz.subject }}</p>
         <p>Score: {{ summary.score }} / {{ summary.num_items }}</p>
     
         {% for item in feedback_data %}
+            {% if item.show_scenario and item.scenario %}
+                <div style="background-color: #f0f0f0; padding: 10px; margin-bottom: 10px;">
+                    <strong>Scenario:</strong> {{ item.scenario }}
+                </div>
+                <p><em>Refer to the scenario above.</em></p>
+            {% elif item.scenario %}
+                <p><em>Refer to the scenario above.</em></p>
+            {% endif %}
+
             <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
                 <p><strong>{{ item.question.question_text }}</strong></p>
-    
+
                 {% for letter, option in item.options.items %}
                     {% if item.user_answer == letter and not item.is_correct %}
                         <p style="color: red;">{{ letter }}. {{ option }} (Your Answer)</p>
@@ -37,5 +44,5 @@
                 {% endfor %}
             </div>
         {% endfor %}
-    {% endif %} 
+    {% endif %}
 </div>
