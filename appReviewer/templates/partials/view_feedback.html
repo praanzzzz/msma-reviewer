@@ -29,7 +29,7 @@
             {% endif %}
 
             <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
-                <p><strong>{{ item.question.question_text }}</strong></p>
+                <p><strong>{{ forloop.counter }}. {{ item.question.question_text }}</strong></p>
 
                 {% for letter, option in item.options.items %}
                     {% if item.user_answer == letter and not item.is_correct %}
