@@ -36,10 +36,10 @@
 
         {% for question in questions %}
             {% if question.scenarios %}
-                <div class="scenario">
-                    <h4>Scenario:</h4>
+                <div  style="background-color: #f0f0f0; padding: 10px; margin-bottom: 10px;" class="scenario">
+                    <strong>Scenario:</strong>
                     {% for scenario in question.scenarios %}
-                        <p>{{ scenario.description }}</p>
+                        {{ scenario.description }}
                         {% if scenario.image_url %}
                             <img src="{{ scenario.image_url }}" alt="Scenario Image" class="img-fluid mb-2">
                         {% endif %}
@@ -47,13 +47,13 @@
                 </div>
             {% endif %}
 
-            <div class="card mt-3">
+            <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
                 <div class="card-body">
+                    {% if question.scenarios %} 
+                    <p><em>Refer to the scenario above.</em></p> 
+                    {% endif %}
                     <p><strong>{{ forloop.counter }}.</strong> 
-                        {% if question.scenarios %} 
-                            (Refer to the scenario above) 
-                        {% endif %}
-                        {{ question.text }}
+                        <strong>{{ question.text }}</strong>
                     </p>
 
                     {% if question.image_url %}
