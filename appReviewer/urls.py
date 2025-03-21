@@ -23,6 +23,7 @@ urlpatterns = [
     path('submit_quiz/', views.submit_quiz, name="submit_quiz"),
     path('fetch_subjects/<int:course_id>/', views.fetch_subjects, name="fetch_subjects"),
     path('view_feedback/', views.view_feedback, name="view_feedback"),
+    path('continue_exam/<int:quiz_id>/', views.continue_exam, name='continue_exam'),
 ]
 
 # it enables django to fetch static files during developmemt phase.

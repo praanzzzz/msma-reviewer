@@ -23,7 +23,10 @@
                             View Feedback
                         </button>
                     {% elif not quiz.is_finished %}
-                        <a href="#" class="btn btn-warning btn-sm">Continue Exam</a>
+                        
+                    <button class="btn btn-warning btn-sm" hx-get="{% url 'continue_exam' quiz.id %}" hx-push-url="true" hx-target="#showuserexam_quizresultcontainer" hx-swap="outerHTML" >
+                        Continue Exam
+                    </button>
                     {% endif %}
                     <button class="btn btn-outline-danger btn-sm" hx-post="{% url 'delete_generated_exam' quiz.id %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-target="#quiz-{{ quiz.id }}" hx-swap="outerHTML" hx-confirm="Are you sure you want to delete this exam?" title="Delete Exam">
                         <i class="bi bi-trash"></i>

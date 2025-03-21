@@ -306,6 +306,7 @@ def generate_questions(request):
                 # Increment question number for the next question
                 question_number += 1
         context = {
+            "exam_title": exam_title,
             "final_questions": final_questions,
             "generated_quiz_id": generated_quiz.id,
             "subject": subject.name,
@@ -435,11 +436,59 @@ def view_feedback(request):
     if request.headers.get("HX-Request"):
         return render(request, "partials/view_feedback.html", context)
 
-    return redirect("reviewer")
+    return redirect("show_user_exams")
 
 
 
+def continue_exam(request, quiz_id):
+    quiz = get_object_or_404(GeneratedQuiz, id=quiz_id, user=request.user, is_finished=False)
 
+    # Retrieve questions and maintain previous order
+    questions = []
+    for question in quiz.questions.all():
+        choices = [
+            {"option": "A", "text": question.option_a},
+            {"option": "B", "text": question.option_b},
+            {"option": "C", "text": question.option_c},
+            {"option": "D", "text": question.option_d},
+        ]
+
+        # Ensure scenario data is safely extracted
+        scenarios = []
+        if question.scenario:  # Check if question has a scenario
+            scenarios.append({
+                "description": question.scenario.name,
+                "image_url": question.scenario.image.url if question.scenario.image else None,
+            })
+
+        questions.append({
+            "id": question.id,
+            "text": question.question_text,
+            "image_url": question.image.url if question.image else None,
+            "choices": choices,
+            "scenarios": scenarios,  # Attach scenario per question
+        })
+
+    # Retrieve all quiz scenarios (if any)
+    quiz_scenarios = [
+        {
+            "description": scenario.name,
+            "image_url": scenario.image.url if scenario.image else None,
+        }
+        for scenario in quiz.scenario.all()  # FIX: Use `.all()` safely only if scenario exists
+    ] if quiz.scenario.exists() else []  # Ensure it doesn’t crash if empty
+
+    context = {
+        "quiz": quiz,
+        "questions": questions,
+        "quiz_scenarios": quiz_scenarios,
+        "duration": quiz.duration.time_duration if quiz.duration else None,
+    }
+
+    if request.headers.get("HX-Request"):
+        return render(request, "partials/continue_exam.html", context)
+
+    return redirect("show_user_exams")
 
 
 @login_required

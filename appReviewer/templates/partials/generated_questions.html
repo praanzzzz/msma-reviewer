@@ -24,8 +24,12 @@
         hx-vals='{"generated_quiz_id": "{{ generated_quiz_id }}"}'>
     
     
-        <h5>{{ subject }}</h5>
-        <p>Exam Duration: {{ duration }} hrs</p>
+        <div style="background-color: #e3f2fd; border: 2px solid #569ade; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);">
+            <h4 style="color: #004085; font-weight: bold; margin-bottom: 15px;">{{ exam_title }}</h4>
+            <p style="margin: 5px 0;"><strong style="color: #004085;">Subject:</strong> {{ subject }}</p>
+            <p style="margin: 5px 0;"><strong style="color: #004085;">Exam Duration:</strong> <span style="color: #28a745;">{{ duration }}</span> hrs</p>
+        </div>
+        
     
         {% csrf_token %}
     
@@ -35,7 +39,7 @@
         {% for group in final_questions %}
             {% if group.scenario %}
                 <!-- Display Scenario -->
-                <div class="scenario">
+                <div class="scenario" style="background-color: #f0f0f0; padding: 10px; margin-bottom: 10px;">
                     <h6>{{ group.scenario.name }}</h6>  
                     {% if group.scenario.image %}
                         <img src="{{ group.scenario.image.url }}" alt="Scenario Image">
@@ -49,7 +53,7 @@
                         {% if question.scenario %}
                             <p class="text-muted"><em>Refer to the scenario above.</em></p>
                         {% endif %}
-                        {{question.level_of_difficulty}}
+                        <!-- {{question.level_of_difficulty}} -->
                         <!-- Correct Sequential Numbering -->
                         <p><strong>{{ question.number }}.</strong> {{ question.question_text }}</p>
     
@@ -103,12 +107,6 @@
     </form>
 
 </div>
-
-
-
-
-
-
 
 
 <br><br><br>
