@@ -9,7 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 signer = Signer()
 import random, json, string, time
 from django.http import HttpResponse, HttpResponseBadRequest
-
+from django.core.paginator import Paginator
 
 
 #                fadgMSMA@2025
@@ -113,11 +113,11 @@ def fetch_subjects(request, course_id):
 
 
 
-from django.core.paginator import Paginator
+
 @login_required
 def show_user_exams(request):
     page_number = request.GET.get('page', 1)
-    page_size = 6
+    page_size = 12
 
     generated_quiz = GeneratedQuiz.objects.filter(user=request.user).order_by('-created_at')
     paginator = Paginator(generated_quiz, page_size)
@@ -216,8 +216,8 @@ def generate_questions(request):
         topics = Topic.objects.filter(subject=subject)
 
         # Map duration to a predefined number of questions, defaulting to 25 if not found
-        duration_map = {1: 2, 2: 50, 3: 100}
-        question_count = duration_map.get(duration.time_duration, 2)
+        duration_map = {1: 6, 2: 50, 3: 100}
+        question_count = duration_map.get(duration.time_duration, 6)
 
         # Split question count for scenario and non-scenario
         scenario_count = question_count // 2
@@ -397,17 +397,9 @@ def submit_quiz(request):
     return redirect("reviewer")
 
         
-
-
-
-
-
+       
 @login_required
 def view_feedback(request):
-    """
-    Displays the feedback for a user's submitted quiz, highlighting incorrect answers.
-    """
-    # if request.method == "GET" and request.headers.get("HX-Request"):
     summary_id = request.GET.get("summary_id")
 
     if not summary_id or not summary_id.isdigit():
@@ -417,10 +409,18 @@ def view_feedback(request):
     generated_quiz = summary.generated_quiz
     questions = generated_quiz.questions.all()
 
-    user_answers = json.loads(summary.user_answers)  # Load user's answers from JSON
+    user_answers = json.loads(summary.user_answers)
 
     feedback_data = []
+    displayed_scenarios = set()  # Use a set to track displayed scenarios
+
     for question in questions:
+        scenario = question.scenario if hasattr(question, "scenario") else None
+        show_scenario = scenario not in displayed_scenarios
+
+        if scenario:
+            displayed_scenarios.add(scenario)  # Track displayed scenarios
+
         question_data = {
             "question": question,
             "user_answer": user_answers.get(str(question.id)),
@@ -432,6 +432,8 @@ def view_feedback(request):
                 "D": question.option_d,
             },
             "is_correct": user_answers.get(str(question.id)) == question.correct_option,
+            "scenario": scenario,
+            "show_scenario": show_scenario,  # Only show scenario once
         }
         feedback_data.append(question_data)
 
@@ -440,15 +442,10 @@ def view_feedback(request):
         "summary": summary,
     }
 
-    # Serve partial for HTMX requests
     if request.headers.get("HX-Request"):
         return render(request, "partials/view_feedback.html", context)
 
-    # Serve full page template for direct URL access or page refresh
     return redirect("reviewer")
-      
-       
-
 
 
 
