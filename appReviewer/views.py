@@ -9,7 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 signer = Signer()
 import random, json, string, time
 from django.http import HttpResponse, HttpResponseBadRequest
-
+from django.core.paginator import Paginator
 
 
 #                fadgMSMA@2025
@@ -113,11 +113,11 @@ def fetch_subjects(request, course_id):
 
 
 
-from django.core.paginator import Paginator
+
 @login_required
 def show_user_exams(request):
     page_number = request.GET.get('page', 1)
-    page_size = 6
+    page_size = 12
 
     generated_quiz = GeneratedQuiz.objects.filter(user=request.user).order_by('-created_at')
     paginator = Paginator(generated_quiz, page_size)
