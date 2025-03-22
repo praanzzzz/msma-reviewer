@@ -143,8 +143,7 @@ def show_user_exams(request):
     }
     if request.headers.get('HX-Request') == 'true':
         return render(request, "partials/exam_list_partial.html", context)
-    else:
-        return render(request, "appReviewer/show_user_exams.html", context)
+    return render(request, "appReviewer/show_user_exams.html", context)
 
 
 
@@ -313,7 +312,7 @@ def generate_questions(request):
             "duration": duration.time_duration}
         time.sleep(2) 
         return render(request, "partials/generated_questions.html", context)
-    return redirect("reviewer")
+    return redirect("show_user_exams")
 
 
 
@@ -391,103 +390,94 @@ def submit_quiz(request):
        
 @login_required
 def view_feedback(request):
-    summary_id = request.GET.get("summary_id")
-
-    if not summary_id or not summary_id.isdigit():
-        return render(request, "partials/view_feedback.html", {"error": "Invalid Summary ID"})
-
-    summary = get_object_or_404(Summary, id=int(summary_id), user=request.user)
-    generated_quiz = summary.generated_quiz
-    questions = generated_quiz.questions.all()
-
-    user_answers = json.loads(summary.user_answers)
-
-    feedback_data = []
-    displayed_scenarios = set()  # Use a set to track displayed scenarios
-
-    for question in questions:
-        scenario = question.scenario if hasattr(question, "scenario") else None
-        show_scenario = scenario not in displayed_scenarios
-
-        if scenario:
-            displayed_scenarios.add(scenario)  # Track displayed scenarios
-
-        question_data = {
-            "question": question,
-            "user_answer": user_answers.get(str(question.id)),
-            "correct_answer": question.correct_option,
-            "options": {
-                "A": question.option_a,
-                "B": question.option_b,
-                "C": question.option_c,
-                "D": question.option_d,
-            },
-            "is_correct": user_answers.get(str(question.id)) == question.correct_option,
-            "scenario": scenario,
-            "show_scenario": show_scenario,  # Only show scenario once
-        }
-        feedback_data.append(question_data)
-
-    context = {
-        "feedback_data": feedback_data,
-        "summary": summary,
-    }
-
     if request.headers.get("HX-Request"):
-        return render(request, "partials/view_feedback.html", context)
+        summary_id = request.GET.get("summary_id")
 
+        if not summary_id or not summary_id.isdigit():
+            return render(request, "partials/view_feedback.html", {"error": "Invalid Summary ID"})
+
+        summary = get_object_or_404(Summary, id=int(summary_id), user=request.user)
+        generated_quiz = summary.generated_quiz
+        questions = generated_quiz.questions.all()
+
+        user_answers = json.loads(summary.user_answers)
+
+        feedback_data = []
+        displayed_scenarios = set()  # Use a set to track displayed scenarios
+
+        for question in questions:
+            scenario = question.scenario if hasattr(question, "scenario") else None
+            show_scenario = scenario not in displayed_scenarios
+
+            if scenario:
+                displayed_scenarios.add(scenario)  # Track displayed scenarios
+
+            question_data = {
+                "question": question,
+                "user_answer": user_answers.get(str(question.id)),
+                "correct_answer": question.correct_option,
+                "options": {
+                    "A": question.option_a,
+                    "B": question.option_b,
+                    "C": question.option_c,
+                    "D": question.option_d,
+                },
+                "is_correct": user_answers.get(str(question.id)) == question.correct_option,
+                "scenario": scenario,
+                "show_scenario": show_scenario,  # Only show scenario once
+            }
+            feedback_data.append(question_data)
+
+        context = {
+            "feedback_data": feedback_data,
+            "summary": summary,
+        }
+        return render(request, "partials/view_feedback.html", context)
     return redirect("show_user_exams")
 
 
 
 def continue_exam(request, quiz_id):
-    quiz = get_object_or_404(GeneratedQuiz, id=quiz_id, user=request.user, is_finished=False)
-
-    # Retrieve questions and maintain previous order
-    questions = []
-    for question in quiz.questions.all():
-        choices = [
-            {"option": "A", "text": question.option_a},
-            {"option": "B", "text": question.option_b},
-            {"option": "C", "text": question.option_c},
-            {"option": "D", "text": question.option_d},
-        ]
-
-        # Ensure scenario data is safely extracted
-        scenarios = []
-        if question.scenario:  # Check if question has a scenario
-            scenarios.append({
-                "description": question.scenario.name,
-                "image_url": question.scenario.image.url if question.scenario.image else None,
-            })
-
-        questions.append({
-            "id": question.id,
-            "text": question.question_text,
-            "image_url": question.image.url if question.image else None,
-            "choices": choices,
-            "scenarios": scenarios,  # Attach scenario per question
-        })
-
-    # Retrieve all quiz scenarios (if any)
-    quiz_scenarios = [
-        {
-            "description": scenario.name,
-            "image_url": scenario.image.url if scenario.image else None,
-        }
-        for scenario in quiz.scenario.all()  # FIX: Use `.all()` safely only if scenario exists
-    ] if quiz.scenario.exists() else []  # Ensure it doesn’t crash if empty
-
-    context = {
-        "quiz": quiz,
-        "questions": questions,
-        "quiz_scenarios": quiz_scenarios,
-        "duration": quiz.duration.time_duration if quiz.duration else None,
-    }
-
     if request.headers.get("HX-Request"):
+        quiz = get_object_or_404(GeneratedQuiz, id=quiz_id, user=request.user, is_finished=False)
+        # Retrieve questions and maintain previous order
+        questions = []
+        for question in quiz.questions.all():
+            choices = [
+                {"option": "A", "text": question.option_a},
+                {"option": "B", "text": question.option_b},
+                {"option": "C", "text": question.option_c},
+                {"option": "D", "text": question.option_d},
+            ]
+            # Ensure scenario data is safely extracted
+            scenarios = []
+            if question.scenario:  # Check if question has a scenario
+                scenarios.append({
+                    "description": question.scenario.name,
+                    "image_url": question.scenario.image.url if question.scenario.image else None,
+                })
+            questions.append({
+                "id": question.id,
+                "text": question.question_text,
+                "image_url": question.image.url if question.image else None,
+                "choices": choices,
+                "scenarios": scenarios,  # Attach scenario per question
+            })
+        # Retrieve all quiz scenarios (if any)
+        quiz_scenarios = [
+            {
+                "description": scenario.name,
+                "image_url": scenario.image.url if scenario.image else None,
+            }
+            for scenario in quiz.scenario.all()  # FIX: Use `.all()` safely only if scenario exists
+        ] if quiz.scenario.exists() else []  # Ensure it doesn’t crash if empty
+        context = {
+            "quiz": quiz,
+            "questions": questions,
+            "quiz_scenarios": quiz_scenarios,
+            "duration": quiz.duration.time_duration if quiz.duration else None,
+        }
         return render(request, "partials/continue_exam.html", context)
-
     return redirect("show_user_exams")
 
 
