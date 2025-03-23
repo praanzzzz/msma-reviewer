@@ -48,7 +48,21 @@
         margin-top: -20px;
     }
 
-   /* Spinner styles */
+    @keyframes growFade {
+    0% {
+        transform: scale(0.5);
+        opacity: 0.3;
+    }
+    50% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.5);
+        opacity: 0.3;
+    }
+    }
+
     .spinner-container {
         display: none;
         position: fixed;
@@ -59,15 +73,43 @@
         z-index: 1000;
         justify-content: center;
         align-items: center;
-        background: rgba(255, 255, 255, 0.8); 
+        background: rgba(255, 255, 255, 0.8);
     }
 
-    /* Ensuring each spinner has spacing */
     .spinner {
         display: flex;
         justify-content: center;
         align-items: center;
-        gap: 15px; /* Space between multiple spinners */
+        gap: 10px; /* Reduced gap for a compact look */
+    }
+
+    .spinner-grow {
+        width: 12px;  /* Smaller circle */
+        height: 12px; /* Smaller circle */
+        border-radius: 50%;
+        background-color: currentColor;
+        animation: growFade 1.2s infinite ease-in-out;
+    }
+
+    /* Smooth sequential animation */
+    .spinner-grow:nth-child(1) {
+        animation-delay: 0s;
+        color: #007bff; /* Primary */
+    }
+
+    .spinner-grow:nth-child(2) {
+        animation-delay: 0.2s;
+        color: #28a745; /* Success */
+    }
+
+    .spinner-grow:nth-child(3) {
+        animation-delay: 0.4s;
+        color: #17a2b8; /* Info */
+    }
+
+    .spinner-grow:nth-child(4) {
+        animation-delay: 0.6s;
+        color: #ffc107; /* Warning */
     }
 </style>
 {% endblock %}
@@ -127,18 +169,12 @@
 <!-- spinner code -->
 <div class="spinner-container" id="spinner">
     <div class="spinner">
-        <div class="spinner-grow text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <div class="spinner-grow text-success" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <div class="spinner-grow text-info" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
+        <div class="spinner-grow" role="status"></div>
+        <div class="spinner-grow" role="status"></div>
+        <div class="spinner-grow" role="status"></div>
+        <div class="spinner-grow" role="status"></div>
     </div>
 </div>
-
 
 
 
