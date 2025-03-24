@@ -56,8 +56,8 @@ INSTALLED_APPS = [
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
-            'client_id': '160162102548-npoeeuu67tr5fvqtk0424jhfvb3ld8hh.apps.googleusercontent.com',
-            'secret': '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',
+            'client_id': config('ALLAUTH_CLIENTID'),
+            'secret': config('ALLAUTH_SECRET'),
             'key': ''
         }
     }
