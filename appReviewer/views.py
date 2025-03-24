@@ -201,13 +201,12 @@ def generate_questions(request):
         exam_title = f"{course_initials}-{subject_initials}-{duration.time_duration}-{unique_id}"
 
 
-
         # Get all topics related to the selected subject
         topics = Topic.objects.filter(subject=subject)
 
         # Map duration to a predefined number of questions, defaulting to 25 if not found
-        duration_map = {1: 25, 2: 50, 3: 100}
-        question_count = duration_map.get(duration.time_duration, 25)
+        duration_map = {1: 5, 2: 50, 3: 100}
+        question_count = duration_map.get(duration.time_duration, 5)
 
         # Split question count for scenario and non-scenario
         scenario_count = question_count // 2
