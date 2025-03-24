@@ -14,6 +14,7 @@ handler404 = 'projectReviewer.urls.custom_404_view'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/', include('allauth.urls')),
     path('',include('appReviewer.urls')),
 ]
 

@@ -35,6 +35,12 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,6 +50,36 @@ INSTALLED_APPS = [
     'appReviewer',
 ]
 
+
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': '160162102548-npoeeuu67tr5fvqtk0424jhfvb3ld8hh.apps.googleusercontent.com',
+            'secret': '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',
+            'key': ''
+        }
+    }
+}
+
+# alauth configurations
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = ''
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+ACCOUNT_UNIQUE_EMAIL = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_ADAPTER = "appReviewer.adapters.CustomAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "appReviewer.adapters.SocialAccountAdapter"
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -52,6 +88,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'projectReviewer.urls'
@@ -145,7 +183,10 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 
 
 
-AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+    ]
 
 LOGIN_URL = '/my_login/' 
 
