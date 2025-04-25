@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+
+
+{% block extra_css %}
+<style>
+    .list-view .quiz-item {
+        width: 70%;
+        margin-bottom: 10px;
+        margin: 0 auto 3px; /* Center items */
+    }
+
+    .list-view .quiz-item .card {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 5px;
+        min-height: 40px;
+        font-size: 0.8rem;
+        justify-content: space-between;
+        border-radius: 8px;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .list-view .quiz-item .btn {
+        padding: 3px 6px;
+        font-size: 0.75rem;
+    }
+
+    .btn.active {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .quiz-nav {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-bottom: 20px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .quiz-nav div.active {
+        color: #007bff;
+        border-bottom: 3px solid #007bff;
+    }
+
+    .quiz-item:hover .card {
+        transform: translateY(-3px) scale(1.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0px 4px 12px rgba(13, 110, 253, 0.3);
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+
+    .quiz-item:hover .btn {
+        opacity: 1;
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .bi-trash {
+        font-size: 0.8rem;
+    }
+    
+    .list-view .quiz-details {
+        flex-grow: 1;
+    }
+    
+    .list-view .quiz-actions {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .grid-view .quiz-actions-grid {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    #showuserexam_quizresultcontainer {
+        margin-top: 190px;
+        margin-bottom: 50px;
+    }
+</style>
+{% endblock %}
+
+
+
+
+
+
+
+{% block content %}
+<div id="showuserexam_quizresultcontainer">
+
+
+    <div class="quiz-nav">
+        <div id="viewQuiz" onclick="navigateTo('{% url 'show_user_exams' %}')" class="active">View All Exams</div>
+        <div id="generateExam" onclick="navigateTo('{% url 'reviewer' %}')">Generate Exam</div>
+    </div>
+
+
+
+    <div class="d-flex justify-content-between mb-3">
+        <div></div>
+        <div>
+            <button id="listViewBtn" class="btn btn-outline-primary">
+                <i class="bi bi-list"></i>
+            </button>
+            <button id="gridViewBtn" class="btn btn-outline-primary active">
+                <i class="bi bi-grid"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="quizContainer" class="row {% if request.GET.view_mode == 'grid' or not request.GET.view_mode %}row-cols-1 row-cols-md-2 row-cols-lg-4 g-3 grid-view{% else %}list-view{% endif %}">
+        {% include 'partials/exam_list_partial.html' %}
+    </div>
+    
+    {% if page_obj.has_next %}
+        <div id="load-more" hx-get="?page={{ page_obj.next_page_number }}{% if request.GET.view_mode %}&view_mode={{ request.GET.view_mode }}{% endif %}" hx-trigger="revealed" hx-swap="beforeend" hx-target="#quizContainer">
+            Loading more...
+        </div>
+    {% endif %}
+
+
+</div>
+
+<script>
+    function navigateTo(url) {
+        window.location.href = url;
+    }
+
+    document.getElementById("listViewBtn").addEventListener("click", function () {
+        const quizContainer = document.getElementById("quizContainer");
+        quizContainer.classList.add("list-view");
+        quizContainer.classList.remove("row-cols-md-2", "row-cols-lg-4", "grid-view");
+        this.classList.add("active");
+        document.getElementById("gridViewBtn").classList.remove("active");
+    });
+
+    document.getElementById("gridViewBtn").addEventListener("click", function () {
+        const quizContainer = document.getElementById("quizContainer");
+        quizContainer.classList.remove("list-view");
+        quizContainer.classList.add("row-cols-md-2", "row-cols-lg-4", "grid-view");
+        this.classList.add("active");
+        document.getElementById("listViewBtn").classList.remove("active");
+    });
+</script>
+{% endblock %}

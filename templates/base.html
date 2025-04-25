@@ -1,0 +1,129 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>TakeUp</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/bootstrap-icons.css">
+
+
+  {% block extra_css %}
+  <!-- unique css per file here -->
+  {% endblock %}
+  
+  <style>
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 40%;
+      transform: translateX(-50%);
+      margin-bottom: 1rem;
+      opacity: 0;
+      animation: fadeIn 0.5s forwards;
+      z-index: 1050;
+
+    }
+
+    /* Fade-in animation keyframes */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+
+
+    .alert-success {
+      border-left: 4px solid #28a745;
+    }
+
+    .alert-error {
+      border-left: 4px solid #dc3545;
+
+    }
+
+    .alert-warning {
+      border-left: 4px solid #ffc107;
+
+    }
+
+    .alert-info {
+      border-left: 4px solid #17a2b8;
+
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+
+    {% block navbar %}
+      {% include 'components/navbar.html' %}
+    {% endblock %}
+
+
+
+    
+    <div id="base-container" class="container">
+      {% block content %}
+      <!-- content here-->
+      {% endblock %}
+    </div>
+
+
+
+    <!-- Django Messages w/ Bootstrap Toasts-->
+    <div id="django-messages" class="fixed-top mt-4 container">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          {% for message in messages %}
+          <div id="django-message-{{ forloop.counter }}" class="toast alert-{{ message.tags }}" role="alert"
+            aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="3000">
+            <div class="toast-header">
+              <i class='bi bi-bell me-4'></i>
+              <strong class="me-auto">{{ message.tags|capfirst }}</strong>
+              <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+              {{ message }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+
+
+  <script>
+    // function to show toasts for server side validation
+    document.addEventListener("DOMContentLoaded", function () {
+      const toastElements = document.querySelectorAll('.toast');
+      toastElements.forEach(function (toastEl) {
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+      });
+    });
+  </script>
+
+
+
+
+
+  <script src="/static/js/htmx.min.js"></script>
+  <script src="/static/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

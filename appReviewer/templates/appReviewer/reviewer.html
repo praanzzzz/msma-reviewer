@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .quiz-nav {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-bottom: 20px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .quiz-nav div {
+        position: relative;
+        padding: 10px;
+        color: #333;
+        text-decoration: none;
+        transition: color 0.3s ease-in-out;
+    }
+
+    .quiz-nav div::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: 0;
+        height: 3px;
+        background-color: #007bff;
+        /* Bootstrap primary color */
+        transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
+    }
+
+    .quiz-nav div:hover::after,
+    .quiz-nav div.active::after {
+        width: 100%;
+        left: 0;
+    }
+
+    .quiz-nav div:hover,
+    .quiz-nav div.active {
+        color: #007bff;
+    }
+
+    #reviewerpage-container {
+        margin-top: -20px;
+    }
+
+    @keyframes growFade {
+    0% {
+        transform: scale(0.5);
+        opacity: 0.3;
+    }
+    50% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.5);
+        opacity: 0.3;
+    }
+    }
+
+    .spinner-container {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.8);
+    }
+
+    .spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px; /* Reduced gap for a compact look */
+    }
+
+    .spinner-grow {
+        width: 12px;  /* Smaller circle */
+        height: 12px; /* Smaller circle */
+        border-radius: 50%;
+        background-color: currentColor;
+        animation: growFade 1.2s infinite ease-in-out;
+    }
+
+    /* Smooth sequential animation */
+    .spinner-grow:nth-child(1) {
+        animation-delay: 0s;
+        color: #007bff; /* Primary */
+    }
+
+    .spinner-grow:nth-child(2) {
+        animation-delay: 0.2s;
+        color: #28a745; /* Success */
+    }
+
+    .spinner-grow:nth-child(3) {
+        animation-delay: 0.4s;
+        color: #17a2b8; /* Info */
+    }
+
+    .spinner-grow:nth-child(4) {
+        animation-delay: 0.6s;
+        color: #ffc107; /* Warning */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="reviewerpage-container" class="container-fluid">
+    <main class="d-flex align-items-center justify-content-center vh-100">
+        <div id="quizresultcontainer" class="p-4 m-4 rounded bg-white">
+            <div class="quiz-nav">
+                <div id="viewQuiz" onclick="navigateTo('{% url 'show_user_exams' %}')">View All Exams</div>
+                <div id="generateExam" onclick="navigateTo('{% url 'reviewer' %}')" class="active">Generate Exam</div>
+            </div>
+
+            <form id="generateForm" hx-post="{% url 'generate_questions' %}" hx-push-url="true" hx-target="#reviewerpage-container" hx-swap="outerHTML">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Select Course</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for course in courses %}
+                        <button type="button" class="btn btn-outline-primary course-btn rounded-pill"
+                            data-value="{{ course.id }}" hx-get="{% url 'fetch_subjects' course.id %}"
+                            hx-push-url="false" hx-target="#subjectsContainer" hx-swap="innerHTML" hx-trigger="click">
+                            {{ course.name }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="selected_course" id="selectedCourse" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Select Subject</label>
+                    <div id="subjectsContainer" class="d-flex flex-wrap gap-2">
+                        <p class="text-muted">Select a course first to load subjects.</p>
+                    </div>
+                    <input type="hidden" name="selected_subject" id="selectedSubject" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Duration of Exam:</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for duration in exam_duration %}
+                        <button type="button" class="btn btn-outline-dark duration-btn rounded-pill"
+                            data-value="{{ duration.time_duration }}">
+                            {{ duration }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="exam_duration" id="selectedDuration" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary rounded-pill w-100">Generate Questions</button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<!-- spinner code -->
+<div class="spinner-container" id="spinner">
+    <div class="spinner">
+        <div class="spinner-grow" role="status"></div>
+        <div class="spinner-grow" role="status"></div>
+        <div class="spinner-grow" role="status"></div>
+        <div class="spinner-grow" role="status"></div>
+    </div>
+</div>
+
+
+
+<script>
+    document.addEventListener("click", function (event) {
+        // Handle course selection
+        if (event.target.classList.contains("course-btn")) {
+            document.querySelectorAll(".course-btn").forEach(btn => btn.classList.remove("active"));
+            event.target.classList.add("active");
+            document.getElementById("selectedCourse").value = event.target.dataset.value;
+        }
+
+        // Handle subject selection
+        if (event.target.classList.contains("subject-btn")) {
+            document.querySelectorAll(".subject-btn").forEach(btn => btn.classList.remove("active"));
+            event.target.classList.add("active");
+            document.getElementById("selectedSubject").value = event.target.dataset.value;
+        }
+
+        // Handle exam duration selection
+        if (event.target.classList.contains("duration-btn")) {
+            document.querySelectorAll(".duration-btn").forEach(btn => btn.classList.remove("active"));
+            event.target.classList.add("active");
+            document.getElementById("selectedDuration").value = event.target.dataset.value;
+        }
+    });
+
+    // spinner htmx + js
+    document.getElementById('generateForm').addEventListener('htmx:beforeRequest', function(evt){
+        document.getElementById('spinner').style.display = 'flex';
+    });
+
+    document.getElementById('generateForm').addEventListener('htmx:afterRequest', function(evt){
+        document.getElementById('spinner').style.display = 'none';
+    });
+</script>
+
+
+
+<script>
+    function navigateTo(url) {
+        window.location.href = url;
+    }
+
+    document.querySelectorAll('.quiz-nav div').forEach(item => {
+        item.addEventListener('click', function () {
+            document.querySelectorAll('.quiz-nav div').forEach(div => div.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+</script>
+{% endblock %}

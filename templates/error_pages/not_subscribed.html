@@ -1,0 +1,16 @@
+
+{% extends 'error_base.html' %}
+{% load static %}
+
+{% block content %}
+
+
+<div class="container d-flex justify-content-center align-items-center vh-100 text-center">
+    <div>
+        <h1>You are not currently Subscribed</h1>
+        <p>Please proceed payment <a href="{% url 'profile' %}">here</a> </p>
+    </div>
+</div>
+
+
+{% endblock %}

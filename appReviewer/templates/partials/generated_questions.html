@@ -1,0 +1,112 @@
+
+{% block extra_css %}
+    <style>
+        #generatedQuestionsContainer{
+            margin-top: 100px;
+        }
+    </style>
+{% endblock %}
+
+
+<div id="generatedQuestionsContainer">
+
+
+    <div>
+        <a href="{% url 'show_user_exams' %}"><button class="btn btn-primary my-4">Go Back</button></a>
+    </div>
+  
+
+    <form method="POST" 
+        hx-post="{% url 'submit_quiz' %}"
+        hx-push-url="true"
+        hx-swap="outerHTML" 
+        hx-target = "#generatedQuestionsContainer"
+        hx-vals='{"generated_quiz_id": "{{ generated_quiz_id }}"}'>
+    
+    
+        <div style="background-color: #e3f2fd; border: 2px solid #569ade; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);">
+            <h4 style="color: #004085; font-weight: bold; margin-bottom: 15px;">{{ exam_title }}</h4>
+            <p style="margin: 5px 0;"><strong style="color: #004085;">Subject:</strong> {{ subject }}</p>
+            <p style="margin: 5px 0;"><strong style="color: #004085;">Exam Duration:</strong> <span style="color: #28a745;">{{ duration }}</span> hrs</p>
+        </div>
+        
+    
+        {% csrf_token %}
+    
+        <!-- Hidden field to pass generated_quiz_id -->
+        <input type="hidden" name="generated_quiz_id" value="{{ generated_quiz_id }}">
+    
+        {% for group in final_questions %}
+            {% if group.scenario %}
+                <!-- Display Scenario -->
+                <div class="scenario" style="background-color: #f0f0f0; padding: 10px; margin-bottom: 10px;">
+                    <h6>{{ group.scenario.name }}</h6>  
+                    {% if group.scenario.image %}
+                        <img src="{{ group.scenario.image.url }}" alt="Scenario Image">
+                    {% endif %}
+                </div>
+            {% endif %}
+    
+            {% for question in group.questions %}
+                <div class="card my-2">
+                    <div class="card-body">
+                        {% if question.scenario %}
+                            <p class="text-muted"><em>Refer to the scenario above.</em></p>
+                        {% endif %}
+                        <!-- {{question.level_of_difficulty}} -->
+                        <!-- Correct Sequential Numbering -->
+                        <p><strong>{{ question.number }}.</strong> {{ question.question_text }}</p>
+    
+                        {% if question.image %}
+                            <img src="{{ question.image.url }}" alt="Question Image">
+                        {% endif %}
+    
+                        <!-- Hidden input for tracking question IDs -->
+                        <input type="hidden" name="question_ids[]" value="{{ question.id }}">
+    
+                        <!-- Radio Button Options -->
+                        <div class="form-check">
+                            <input type="radio" name="answers_{{ question.id }}" id="option_a_{{ question.id }}"
+                                class="form-check-input" value="A" required>
+                            <label for="option_a_{{ question.id }}" class="form-check-label">
+                                A. {{ question.option_a }}
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input type="radio" name="answers_{{ question.id }}" id="option_b_{{ question.id }}"
+                                class="form-check-input" value="B" required>
+                            <label for="option_b_{{ question.id }}" class="form-check-label">
+                                B. {{ question.option_b }}
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input type="radio" name="answers_{{ question.id }}" id="option_c_{{ question.id }}"
+                                class="form-check-input" value="C" required>
+                            <label for="option_c_{{ question.id }}" class="form-check-label">
+                                C. {{ question.option_c }}
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input type="radio" name="answers_{{ question.id }}" id="option_d_{{ question.id }}"
+                                class="form-check-input" value="D" required>
+                            <label for="option_d_{{ question.id }}" class="form-check-label">
+                                D. {{ question.option_d }}
+                            </label>
+                        </div>
+                        
+                    </div>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary mt-3">Submit Quiz</button>
+    </form>
+
+</div>
+
+
+<br><br><br>

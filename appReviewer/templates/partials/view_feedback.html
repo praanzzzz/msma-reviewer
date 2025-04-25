@@ -1,0 +1,75 @@
+{% block extra_css %}
+    <style>
+        #view-feedback-container{
+            margin-top: 100px;
+        }
+        .scenario-image, .question-image {
+            max-width: 300px; /* Adjust as needed */
+            height: auto;
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+{% endblock %}
+
+<div id="view-feedback-container">
+    <div>
+        <a href="{% url 'show_user_exams' %}"><button class="btn btn-primary my-4">Go Back</button></a>
+    </div>
+    
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% else %} 
+
+        <div style="background-color: #e3f2fd; border: 2px solid #569ade; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);">
+            <h4 style="color: #004085; font-weight: bold; margin-bottom: 15px;">{{ summary.generated_quiz.title }}</h4>
+            <p style="margin: 5px 0;"><strong style="color: #004085;">Subject: </strong>{{ summary.generated_quiz.subject }}</p>
+            <p style="margin: 5px 0;"><strong style="color: #004085;">Score: </strong> <span style="color: #28a745;">{{ summary.score }} / {{ summary.num_items }}</span></p>
+        </div>
+    
+    
+        {% for item in feedback_data %}
+            {% if item.show_scenario and item.scenario %}
+                <div style="background-color: #f0f0f0; padding: 10px; margin-bottom: 10px;">
+                    <strong>Scenario:</strong> {{ item.scenario.name }}
+                    {% if item.scenario.image %}
+                        <img src="{{ item.scenario.image.url }}" alt="Scenario Image" class="scenario-image">
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
+                {% if item.scenario %}
+                    <p><em>Refer to the scenario above.</em></p> 
+                {% endif %}
+                
+                <p><strong>{{ forloop.counter }}. {{ item.question.question_text }}</strong></p>
+                {% if item.question.image %}
+                    <img src="{{ item.question.image.url }}" alt="Question Image" class="question-image">
+                {% endif %}
+
+                {% for letter, option in item.options.items %}
+                    {% if item.user_answer == letter and not item.is_correct %}
+                        <div style="background-color: #ffcccc; padding: 5px; border-radius: 5px;">
+                            <p style="color: red; margin: 0;">{{ letter }}. {{ option }} (Your Answer)</p>
+                        </div>
+                    {% elif item.correct_answer == letter %}
+                        <div style="background-color: #ccffcc; padding: 5px; border-radius: 5px;">
+                            <p style="color: green; margin: 0;">{{ letter }}. {{ option }} (Correct Answer)</p>
+                        </div>
+                    {% elif item.user_answer == letter %}
+                        <div style="background-color: white; padding: 5px; border-radius: 5px;">
+                            <p style="margin: 0;">{{ letter }}. {{ option }} (Your Answer)</p>
+                        </div>
+                    {% else %}
+                        <div style="background-color: white; padding: 5px; border-radius: 5px;">
+                            <p style="margin: 0;">{{ letter }}. {{ option }}</p>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
