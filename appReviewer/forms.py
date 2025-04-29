@@ -2,6 +2,7 @@ from django import forms
 from .models import CustomUser
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import UserChangeForm, PasswordChangeForm
 
 
 class RegisterForm(forms.ModelForm):
@@ -74,3 +75,73 @@ class LoginForm(forms.Form):
             attrs={"class": "form-control", "placeholder": "Password"}
         ),
     )
+
+
+
+
+
+
+
+
+
+class CustomPasswordChangeForm(PasswordChangeForm):    
+    class Meta:
+        model = CustomUser
+        fields = ["old_password", "new_password1", "new_password2"]
+
+    old_password = forms.CharField(
+        label="",
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Old Password",
+                "autofocus": True,
+            }
+        ),
+    )
+    new_password1 = forms.CharField(
+        label="",
+        widget=forms.PasswordInput(
+            attrs={"class": "form-control", "placeholder": "New Password"}
+        ),
+    )
+    new_password2 = forms.CharField(
+        label="",
+        widget=forms.PasswordInput(
+            attrs={"class": "form-control", "placeholder": "Confirm New Password"}
+        ),
+    )
+   
+
+
+
+class CustomUserUpdateForm(UserChangeForm):
+    password = None
+    email = forms.EmailField(
+        max_length=50, 
+        widget=forms.EmailInput(attrs={"class": "form-control"}),
+    ),
+    class Meta:
+        model = CustomUser
+        fields = [
+            "email",
+            "profile_picture",
+        ]
+
+        widgets = {
+            "email": forms.EmailInput(attrs={"class": "form-control"}),
+           
+            'profile_picture': forms.ClearableFileInput(attrs={
+                'class': 'form-control-file form-control',  # Bootstrap class for form styling
+                'accept': 'image/*',  # Restrict to image files
+                'placeholder': 'Choose an image',  # Add placeholder text
+            })
+        }
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if CustomUser.objects.filter(email__iexact=email).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError("Email already in use.")
+        return email
+    
+
+

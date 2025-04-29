@@ -3,8 +3,6 @@ from appReviewer import views
 from django.conf import settings
 from django.conf.urls.static import static
 
-
-
 urlpatterns = [
     path('', views.landing_page, name='landing_page'),
     path('dashboard/', views.dashboard, name='dashboard'),
@@ -16,6 +14,10 @@ urlpatterns = [
     path('reviewer/', views.reviewer, name='reviewer'),
     path('show_user_exams/', views.show_user_exams, name='show_user_exams'),
     path("delete-exam/<int:quiz_id>/", views.delete_generated_exam, name="delete_generated_exam"),
+    path('profile/update_profile', views.update_profile, name='update_profile'),
+    path('profile/deactivate_account/', views.deactivate_account, name='deactivate_account'),
+    path('profile/password_change', views.password_change, name='password_change'),
+    path('profile/billing/', views.billing, name='billing'),
 
 
     # partial pages

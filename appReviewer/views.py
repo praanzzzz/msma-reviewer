@@ -2,10 +2,10 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from .utils import send_verification_email
 from django.contrib import messages
-from .forms import RegisterForm, LoginForm
+from .forms import RegisterForm, LoginForm, CustomUserUpdateForm, CustomPasswordChangeForm
 from .models import CustomUser, Course, Subject, Topic, Scenario, LevelOfDifficulty, Question, GeneratedQuiz, Summary, TimeLimit
 from django.core.signing import Signer, BadSignature, SignatureExpired
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 signer = Signer()
 import random, json, string, time
 from django.http import HttpResponse, HttpResponseBadRequest
@@ -87,6 +87,85 @@ def my_logout(request):
 
 
 
+
+@login_required
+def profile(request):
+    return render(request, "appReviewer/profile.html")
+
+
+
+@login_required
+def update_profile(request):
+    user = get_object_or_404(CustomUser, pk=request.user.pk)
+
+    if request.method == "POST":
+        updateprofileform = CustomUserUpdateForm(
+            request.POST, request.FILES, instance=user
+        )
+        if updateprofileform.is_valid():
+            updateprofileform.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect("profile")
+        else:
+            pass
+    else:
+        updateprofileform = CustomUserUpdateForm(instance=user)
+
+    context = {"updateprofileform": updateprofileform}
+    return render(request, "appReviewer/update_profile.html", context)
+
+
+@login_required
+def deactivate_account(request):
+    if request.method == "POST":
+        user = request.user
+        user.is_active = False
+        user.save()
+        logout(request)
+        messages.success(request, "Your account has been deactivated.")
+        return redirect("my_login")
+    return render(request, "appReviewer/update_profile.html")
+
+
+
+
+
+@login_required
+def password_change(request):
+    user = get_object_or_404(CustomUser, pk=request.user.pk)
+
+    if request.method == "POST":
+        passwordchangeform = CustomPasswordChangeForm(request.user, request.POST)
+        if passwordchangeform.is_valid():
+            user = passwordchangeform.save()
+            # Maintain the user's session, we can remove this kay this wont make sense 
+            # since we need to logout users after password change
+            update_session_auth_hash(request, user) 
+            logout(request)
+            messages.success(
+                request, "Your password has been changed. Please log in again."
+            )
+            return redirect("my_login")
+        else:
+            messages.error(
+                request, "Error updating profile. Please check the form."
+            )
+    else:
+        passwordchangeform = CustomPasswordChangeForm(request.user)
+    context = {"passwordchangeform": passwordchangeform,
+                }
+    return render(
+        request, "appReviewer/password_change.html", context)
+
+
+@login_required
+def billing(request):
+    return render(request, "appReviewer/billing.html", {})
+
+
+
+
+# EXAM RELATED FUNCTIONS
 @login_required
 def reviewer(request):
     courses = Course.objects.all()
@@ -478,8 +557,3 @@ def continue_exam(request, quiz_id):
         }
         return render(request, "partials/continue_exam.html", context)
     return redirect("show_user_exams")
-
-
-@login_required
-def profile(request):
-    return render(request, "appReviewer/profile.html")
