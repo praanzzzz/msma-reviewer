@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.auth.hashers import make_password
 from datetime import timedelta
+from django.utils import timezone
 
 
 # enables email verification instead of username
@@ -118,6 +119,8 @@ class Question(models.Model):
     
 
 
+
+
 class TimeLimit(models.Model):
     TIME_LIMIT_CHOICES = [
             (1, "1 hour"),
@@ -134,13 +137,17 @@ class TimeLimit(models.Model):
 
 
 
+
+
+
+
 class GeneratedQuiz(models.Model):
     # id as identifier
     title = models.CharField(max_length=20, default="testtitle")
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     duration = models.ForeignKey(TimeLimit, on_delete = models.CASCADE, null=True)
-    scenario = models.ManyToManyField(Scenario, blank=True) 
+    scenario = models.ManyToManyField(Scenario, blank=True)
     questions = models.ManyToManyField(Question)
     created_at = models.DateTimeField(auto_now_add=True)
     is_finished = models.BooleanField(default = False)

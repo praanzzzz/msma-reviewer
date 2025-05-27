@@ -1,3 +1,5 @@
+
+
 {% block extra_css %}
 <style>
     #continue_exam_container {
@@ -19,6 +21,7 @@
         </a>
     </div>
 
+
     <form method="POST" hx-post="{% url 'submit_quiz' %}" 
         hx-push-url="true" hx-swap="outerHTML"
         hx-target="#continue_exam_container" 
@@ -27,7 +30,8 @@
         <div style="background-color: #e3f2fd; border: 2px solid #569ade; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);">
             <h4 style="color: #004085; font-weight: bold; margin-bottom: 15px;">{{ quiz.title }}</h4>
             <p style="margin: 5px 0;"><strong style="color: #004085;">Subject:</strong> {{ quiz.subject.name }}</p>
-            <p style="margin: 5px 0;"><strong style="color: #004085;">Exam Duration:</strong> <span style="color: #28a745;">{{ quiz.duration.get_time_duration_display }}</span></p>
+            <p style="margin: 5px 0;"><strong style="color: #004085;">Exam Duration:</strong> <span style="color: #28a745;"> <span id="countdown">
+                {{ hours|stringformat:"02d" }} : {{ minutes|stringformat:"02d" }} : {{ seconds|stringformat:"02d" }}</span> hrs</p>
         </div>
         
 
@@ -100,5 +104,43 @@
         <button type="submit" class="btn btn-primary mt-4">Submit</button>
     </form>
 </div>
+
+
+
+<script>
+    // Function to update the countdown timer
+    function updateTimer() {
+        var hours = parseInt(document.getElementById('countdown').textContent.split(':')[0]);
+        var minutes = parseInt(document.getElementById('countdown').textContent.split(':')[1]);
+        var seconds = parseInt(document.getElementById('countdown').textContent.split(':')[2]);
+
+        if (seconds > 0) {
+            seconds--;
+        } else {
+            if (minutes > 0) {
+                minutes--;
+                seconds = 59;
+            } else {
+                if (hours > 0) {
+                    hours--;
+                    minutes = 59;
+                    seconds = 59;
+                } else {
+                    // Timer has reached zero, you can handle this case as needed
+                }
+            }
+        }
+
+        // Update the timer display
+        document.getElementById('countdown').textContent =
+            (hours < 10 ? '0' : '') + hours + ' : ' +
+            (minutes < 10 ? '0' : '') + minutes + ' : ' +
+            (seconds < 10 ? '0' : '') + seconds;
+    }
+
+    // Update the timer every second
+    setInterval(updateTimer, 1000);
+</script>
+
 
 <br><br><br>

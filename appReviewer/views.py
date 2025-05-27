@@ -10,7 +10,9 @@ signer = Signer()
 import random, json, string, time
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.paginator import Paginator
-
+from django.utils import timezone
+from datetime import timedelta
+from datetime import datetime
 
 #                fadgMSMA@2025
 
@@ -251,6 +253,8 @@ def delete_generated_exam(request, quiz_id):
 
 
 
+
+
 @login_required
 def generate_questions(request):
     if not request.user.is_subscribed:
@@ -267,7 +271,8 @@ def generate_questions(request):
         subject = get_object_or_404(Subject, id=int(selectedSubject), course=course)
         duration = get_object_or_404(TimeLimit, time_duration=int(selectedDuration))
 
-
+        # add a a code here to convert selectedDuration to a time and date > and then save it as duration together
+        # with the generation of quiz
 
         # Generate initials from course and subject names
         def get_initials(name):
@@ -284,7 +289,7 @@ def generate_questions(request):
         topics = Topic.objects.filter(subject=subject)
 
         # Map duration to a predefined number of questions, defaulting to 25 if not found
-        duration_map = {1: 5, 2: 50, 3: 100}
+        duration_map = {1: 25, 2: 50, 3: 100}
         question_count = duration_map.get(duration.time_duration, 5)
 
         # Split question count for scenario and non-scenario
@@ -343,6 +348,34 @@ def generate_questions(request):
             title=exam_title
         )
 
+        hours = 0
+        minutes = 0
+        seconds = 0
+
+        # Handle duration-based expiration time
+        if selectedDuration == "1": 
+            expiration_time = generated_quiz.created_at + timedelta(hours=1)
+            time_remaining = expiration_time - timezone.now()  # Use timezone.now()
+            hours = time_remaining.seconds // 3600
+            minutes = (time_remaining.seconds % 3600) // 60
+            seconds = time_remaining.seconds % 60
+        elif selectedDuration == "2":
+            expiration_time = generated_quiz.created_at + timedelta(hours=2)
+            time_remaining = expiration_time - timezone.now()  # Use timezone.now()
+            hours = time_remaining.seconds // 3600
+            minutes = (time_remaining.seconds % 3600) // 60
+            seconds = time_remaining.seconds % 60
+        elif selectedDuration == "3":
+            expiration_time = generated_quiz.created_at + timedelta(hours=3)
+            time_remaining = expiration_time - timezone.now()  # Use timezone.now()
+            hours = time_remaining.seconds // 3600
+            minutes = (time_remaining.seconds % 3600) // 60
+            seconds = time_remaining.seconds % 60
+        else:
+            messages.error(request, "Invalid exam duration selected.")
+            return redirect("show_user_exams")
+
+
         # Flatten the grouped questions into a single list to associate them with the generated quiz
         all_questions_list = []
         for group in final_questions:
@@ -387,7 +420,10 @@ def generate_questions(request):
             "final_questions": final_questions,
             "generated_quiz_id": generated_quiz.id,
             "subject": subject.name,
-            "duration": duration.time_duration}
+            "duration": duration.time_duration,
+            'hours': hours,
+            'minutes': minutes,
+            'seconds': seconds}
         time.sleep(2) 
         return render(request, "partials/generated_questions.html", context)
     return redirect("show_user_exams")
@@ -549,11 +585,46 @@ def continue_exam(request, quiz_id):
             }
             for scenario in quiz.scenario.all()  # FIX: Use `.all()` safely only if scenario exists
         ] if quiz.scenario.exists() else []  # Ensure it doesn’t crash if empty
+
+
+
+
+        duration = quiz.duration  # This is a TimeLimit object
+        selectedDuration = duration.time_duration  # Access the integer value (e.g., 1, 2, or 3)
+        print(selectedDuration)  # Outputs: 1 (for 1 hour)
+
+
+        # Handle duration-based expiration time
+        if selectedDuration == 1: 
+            expiration_time = quiz.created_at + timedelta(hours=1)
+            time_remaining = expiration_time - timezone.now()  # Use timezone.now()
+            hours = time_remaining.seconds // 3600
+            minutes = (time_remaining.seconds % 3600) // 60
+            seconds = time_remaining.seconds % 60
+        elif selectedDuration == 2:
+            expiration_time = quiz.created_at + timedelta(hours=2)
+            time_remaining = expiration_time - timezone.now()  # Use timezone.now()
+            hours = time_remaining.seconds // 3600
+            minutes = (time_remaining.seconds % 3600) // 60
+            seconds = time_remaining.seconds % 60
+        elif selectedDuration == 3:
+            expiration_time = quiz.created_at + timedelta(hours=3)
+            time_remaining = expiration_time - timezone.now()  # Use timezone.now()
+            hours = time_remaining.seconds // 3600
+            minutes = (time_remaining.seconds % 3600) // 60
+            seconds = time_remaining.seconds % 60
+        else:
+            messages.error(request, "Invalid exam duration selected.")
+            return redirect("show_user_exams")
+
         context = {
             "quiz": quiz,
             "questions": questions,
             "quiz_scenarios": quiz_scenarios,
             "duration": quiz.duration.time_duration if quiz.duration else None,
+            'hours': hours,
+            'minutes': minutes,
+            'seconds': seconds
         }
         return render(request, "partials/continue_exam.html", context)
     return redirect("show_user_exams")
